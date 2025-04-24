@@ -1,0 +1,45 @@
+name: Move Issue to In Progress on Assignment
+
+on:
+  issues:
+    types: [assigned] # Trigger when an issue is assigned
+
+jobs:
+  move_to_in_progress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move issue to In Progress
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const projectName = "Your Project Name";
+            const columnName = "In Progress";
+            
+            const { data: projects } = await github.projects.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const project = projects.find(p => p.name === projectName);
+            if (!project) {
+              throw new Error(`Project "${projectName}" not found`);
+            }
+
+            const { data: columns } = await github.projects.listColumns({
+              project_id: project.id,
+            });
+
+            const column = columns.find(c => c.name === columnName);
+            if (!column) {
+              throw new Error(`Column "${columnName}" not found`);
+            }
+
+            const { data: cards } = await github.projects.listCards({
+              column_id: column.id,
+            });
+
+            await github.projects.createCard({
+              column_id: column.id,
+              content_id: context.payload.issue.id,
+              content_type: "Issue",
+            });
