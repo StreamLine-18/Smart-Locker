@@ -12,30 +12,82 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const { graphql } = require('@octokit/graphql');
+
+            const graphqlWithAuth = graphql.defaults({
+              headers: {
+                authorization: `token ${process.env.GITHUB_TOKEN}`,
+              },
+            });
+
             const projectName = "Your Project Name";
             const columnName = "In Progress";
 
-            const { data: projects } = await github.rest.projects.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+            // Query the new Projects API to get the project ID
+            const { organization } = await graphqlWithAuth(`
+              query($org: String!, $projectName: String!) {
+                organization(login: $org) {
+                  projectsV2(first: 100, query: $projectName) {
+                    nodes {
+                      id
+                      title
+                    }
+                  }
+                }
+              }
+            `, {
+              org: context.repo.owner,
+              projectName: projectName,
             });
 
-            const project = projects.find(p => p.name === projectName);
+            const project = organization.projectsV2.nodes.find(p => p.title === projectName);
             if (!project) {
               throw new Error(`Project "${projectName}" not found`);
             }
 
-            const { data: columns } = await github.rest.projects.listColumns({
-              project_id: project.id,
+            // Query the columns for the project
+            const { node: projectDetails } = await graphqlWithAuth(`
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    id
+                    fields(first: 100) {
+                      nodes {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            `, {
+              projectId: project.id,
             });
 
-            const column = columns.find(c => c.name === columnName);
+            const column = projectDetails.fields.nodes.find(c => c.name === columnName);
             if (!column) {
               throw new Error(`Column "${columnName}" not found`);
             }
 
-            await github.rest.projects.createCard({
-              column_id: column.id,
-              content_id: context.payload.issue.id,
-              content_type: "Issue",
+            // Move the issue to the specified column
+            await graphqlWithAuth(`
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId,
+                  itemId: $itemId,
+                  fieldId: $fieldId,
+                  value: $value
+                }) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `, {
+              projectId: project.id,
+              itemId: context.payload.issue.node_id,
+              fieldId: column.id,
+              value: columnName,
             });
+
+            console.log(`Issue moved to column "${columnName}" in project "${projectName}"`);
