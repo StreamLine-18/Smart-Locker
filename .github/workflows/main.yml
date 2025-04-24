@@ -14,8 +14,8 @@ jobs:
           script: |
             const projectName = "Your Project Name";
             const columnName = "In Progress";
-            
-            const { data: projects } = await github.projects.listForRepo({
+
+            const { data: projects } = await github.rest.projects.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -25,7 +25,7 @@ jobs:
               throw new Error(`Project "${projectName}" not found`);
             }
 
-            const { data: columns } = await github.projects.listColumns({
+            const { data: columns } = await github.rest.projects.listColumns({
               project_id: project.id,
             });
 
@@ -34,11 +34,7 @@ jobs:
               throw new Error(`Column "${columnName}" not found`);
             }
 
-            const { data: cards } = await github.projects.listCards({
-              column_id: column.id,
-            });
-
-            await github.projects.createCard({
+            await github.rest.projects.createCard({
               column_id: column.id,
               content_id: context.payload.issue.id,
               content_type: "Issue",
