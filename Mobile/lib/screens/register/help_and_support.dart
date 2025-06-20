@@ -10,131 +10,230 @@ class HelpAndSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.light(),
-      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color.fromARGB(255, 18, 32, 47),
+      ),
       home: Scaffold(
-        backgroundColor: const Color(0xFF16423C),
-        body: const HelpSupportContent(),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 3,
-          selectedItemColor: Colors.teal,
-          unselectedItemColor: Colors.grey,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Card'),
-            BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Transactions'),
-            BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Requests'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        ),
+        body: ListView(children: const [
+          Profile(),
+        ]),
       ),
     );
   }
 }
 
-class HelpSupportContent extends StatelessWidget {
-  const HelpSupportContent({super.key});
+class Profile extends StatelessWidget {
+  const Profile({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 16.0, top: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Help and Support',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x20000000),
-                  blurRadius: 20,
-                  offset: Offset(0, 4),
-                )
-              ],
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
+    return Column(
+      children: [
+        Container(
+          width: 403,
+          height: 861,
+          clipBehavior: Clip.antiAlias,
+          decoration: const BoxDecoration(color: Color(0xFFF9F9F9)),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 5,
+                top: 102,
+                child: Container(
+                  width: 393,
+                  height: 788,
+                  decoration: ShapeDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF50BF95), Color(0xFF386F5A)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
+                      begin: Alignment(0.50, -0.00),
+                      end: Alignment(0.50, 1.00),
+                      colors: [Color(0xFF38A898), Color(0xFF16423C)],
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Aplikasinya sangat responsif\ndan desain minimalis\nmudah untuk di pahami',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
+                    shadows: const [
+                      BoxShadow(
+                        color: Color(0x59000000),
+                        blurRadius: 58.20,
+                        offset: Offset(0, 0),
+                        spreadRadius: 0,
+                      )
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.limeAccent, // kotak hijau seperti di gambar
+              ),
+              Positioned(
+                left: 25,
+                top: 59,
+                child: Text(
+                  'Help and suport',
+                  style: TextStyle(
+                    color: const Color(0xFF181D27),
+                    fontSize: 20,
+                    fontFamily: 'DM Sans',
+                    fontWeight: FontWeight.w700,
+                    height: 1.05,
+                  ),
                 ),
-                const SizedBox(height: 20),
-                Container(
-                  height: 50,
-                  width: double.infinity,
+              ),
+              Positioned(
+                left: 30,
+                top: 134,
+                child: Container(
+                  width: 343,
+                  height: 350,
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(70),
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: -5,
+                        child: Container(
+                          width: 343,
+                          height: 566,
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0x0F000000),
+                                blurRadius: 44,
+                                offset: Offset(0, 4),
+                                spreadRadius: 0,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 14,
+                        top: 11,
+                        child: Container(
+                          width: 316,
+                          height: 420,
+                          decoration: ShapeDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment(0.00, 0.50),
+                              end: Alignment(1.00, 0.50),
+                              colors: [Color(0xFF50BF95), Color(0xFF386F5A)],
+                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0x0F000000),
+                                blurRadius: 44,
+                                offset: Offset(0, 4),
+                                spreadRadius: 0,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 14,
+                        top: 477,
+                        child: Container(
+                          width: 316,
+                          height: 67,
+                          decoration: ShapeDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment(0.00, 0.50),
+                              end: Alignment(1.00, 0.50),
+                              colors: [Color(0xFF50BF95), Color(0xFF386F5A)],
+                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0x0F000000),
+                                blurRadius: 44,
+                                offset: Offset(0, 4),
+                                spreadRadius: 0,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Positioned(
+                        left: 26,
+                        top: 27,
+                        child: SizedBox(
+                          width: 291,
+                          child: Text(
+                            'Aplikasinya sangat resposnsif\ndan desain minimalis\nmudah untuk di pahami',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontFamily: 'DM Sans',
+                              fontWeight: FontWeight.w700,
+                              height: 1.30,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 188,
+                top: 710,
+                child: Container(
+                  width: 22.31,
+                  height: 23,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF50BF95), Color(0xFF386F5A)],
+                    image: const DecorationImage(
+                      image: NetworkImage("https://placehold.co/22x23"),
+                      fit: BoxFit.fill,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x19000000),
+                        blurRadius: 2.10,
+                        offset: Offset(2, 3),
+                        spreadRadius: 0,
+                      )
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Column(
-            children: const [
-              SizedBox(height: 10),
-              Icon(Icons.shield_outlined, color: Colors.cyan, size: 32),
-              Text(
-                'Smart Locker',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              ),
+              const Positioned(
+                left: 162,
+                top: 735,
+                child: Text(
+                  'Smart Locker',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w800,
+                    height: 1.40,
+                    letterSpacing: -0.11,
+                  ),
                 ),
               ),
-              Text(
-                'No Keys, No Hassle, Just Click !',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.white70,
+              const Positioned(
+                left: 132,
+                top: 749,
+                child: Text(
+                  'No Keys, No Hassle, Just Click !',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w300,
+                    height: 1.40,
+                    letterSpacing: 0.56,
+                  ),
                 ),
               ),
-              SizedBox(height: 10),
             ],
-          )
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
