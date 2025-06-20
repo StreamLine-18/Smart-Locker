@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         '/success_screen': (context) => const SuccessScreen(),
         '/language': (context) => const LanguageScreen(),
         '/edit_profile': (context) => const EditProfilePage(),
-        '/select_locker': (context) => const SelectLockerScreen(),
+        '/select_locker': (context) => const BookingLockerScreen(),
 
       },
     );
