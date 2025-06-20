@@ -5,202 +5,149 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF6A9C89), // background hijau
+      backgroundColor: const Color(0xFF1D726C), // Warna background hijau gradasi
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 3,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.credit_card), label: 'Card'),
+          BottomNavigationBarItem(icon: Icon(Icons.swap_vert), label: 'Transactions'),
+          BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Requests'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              const Text(
-                'Profile',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              const Text("Profile", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 16),
+
+              // Profile Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF3BB07B), Color(0xFF1D726C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                ),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 30,
+                      backgroundImage: AssetImage('assets/avatar_placeholder.png'), // Ganti sesuai asset kamu
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text("Muhammad Sumbul", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          SizedBox(height: 4),
+                          Text("MuhammadSumbul69@gmail.com", style: TextStyle(color: Colors.white70)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.edit, color: Colors.white),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Section 1
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
                   color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    _buildListTile(
+                      icon: Icons.language,
+                      title: "Languages",
+                      subtitle: "Change your languages",
+                      trailing: const Icon(Icons.warning, color: Colors.red),
+                    ),
+                    _buildListTile(
+                      icon: Icons.history,
+                      title: "History",
+                      subtitle: "Your History",
+                    ),
+                    _buildListTile(
+                      icon: Icons.logout,
+                      title: "Log out",
+                      subtitle: "Further secure your account for safety",
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/edit_profile');
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: const [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundImage: AssetImage('assets/images/avatar.png'),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Muhammad Sumbul',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'MuhammadSumbul69@gmail.com',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.edit, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              ),
+
               const SizedBox(height: 24),
-              _ProfileCard(
-                children: [
-                  _ProfileOption(
-                    icon: Icons.language,
-                    title: 'Languages',
-                    subtitle: 'Change your languages',
-                    onTap: () => Navigator.pushNamed(context, '/language'),
-                  ),
-                  _ProfileOption(
-                    icon: Icons.history,
-                    title: 'History',
-                    subtitle: 'Your History',
-                    onTap: () => Navigator.pushNamed(context, '/history'),
-                  ),
-                  _ProfileOption(
-                    icon: Icons.logout,
-                    title: 'Log out',
-                    subtitle: 'Further secure your account for safety',
-                    onTap: () => Navigator.pushReplacementNamed(context, '/sign-in'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'More',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+              const Center(child: Text("More", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+
               const SizedBox(height: 12),
-              _ProfileCard(
-                children: [
-                  _ProfileOption(
-                    icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    onTap: () => Navigator.pushNamed(context, '/help_and_support'),
-                  ),
-                  _ProfileOption(
-                    icon: Icons.favorite_border,
-                    title: 'About App',
-                    onTap: () => Navigator.pushNamed(context, '/about'),
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    _buildListTile(
+                      icon: Icons.support,
+                      title: "Help & Support",
+                    ),
+                    _buildListTile(
+                      icon: Icons.info,
+                      title: "About App",
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 30),
-              Column(
-                children: const [
-                  Icon(Icons.shield_rounded, size: 36, color: Colors.white),
-                  SizedBox(height: 8),
-                  Text('Smart Locker', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  Text('No Keys, No Hassle, Just Click !', style: TextStyle(color: Colors.white)),
-                ],
+
+              const SizedBox(height: 32),
+              // Footer logo
+              Center(
+                child: Column(
+                  children: const [
+                    Icon(Icons.shield, color: Colors.teal, size: 40), // Ganti dengan logo asli kalau ada
+                    SizedBox(height: 8),
+                    Text("Smart Locker", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text("No Keys, No Hassle, Just Click !", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  ],
+                ),
               ),
-              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF6A9C89),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.credit_card), label: 'Card'),
-          BottomNavigationBarItem(icon: Icon(Icons.swap_vert), label: 'Transactions'),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Requests'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/card');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/transactions');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/requests');
-              break;
-          }
-        },
-      ),
     );
   }
-}
 
-class _ProfileCard extends StatelessWidget {
-  final List<Widget> children;
-
-  const _ProfileCard({required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
-class _ProfileOption extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-
-  const _ProfileOption({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+  }) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF6A9C89)),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap,
+      leading: Icon(icon, color: Colors.teal),
+      title: Text(title),
+      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
+      trailing: trailing ?? const Icon(Icons.chevron_right),
     );
   }
 }
