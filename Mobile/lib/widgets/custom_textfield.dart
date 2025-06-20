@@ -1,48 +1,41 @@
 import 'package:flutter/material.dart';
 
+/// Widget custom untuk TextField dengan styling khas SmartLocker
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
-  final TextInputType keyboardType;
-  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
     required this.controller,
     required this.hintText,
     this.obscureText = false,
-    this.keyboardType = TextInputType.text,
-    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return TextField(
       controller: controller,
       obscureText: obscureText,
-      keyboardType: keyboardType,
-      validator: validator,
       style: const TextStyle(
+        fontSize: 12,
         fontFamily: 'Inter',
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: Colors.black,
       ),
       decoration: InputDecoration(
         hintText: hintText,
+        hintStyle: const TextStyle(
+          color: Colors.grey,
+          fontSize: 12,
+          fontFamily: 'Inter',
+        ),
         filled: true,
-        fillColor: const Color(0xFFF5F5F5),
+        fillColor: const Color(0xFFF0F0F0),
         contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(9),
           borderSide: BorderSide.none,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 14,
-          color: Colors.grey,
         ),
       ),
     );

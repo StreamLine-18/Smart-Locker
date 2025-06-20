@@ -32,10 +32,8 @@ class SignInScreen extends StatelessWidget {
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Left: Form
-                            Expanded(child: _buildFormContent(isWide)),
+                            Expanded(child: _buildFormContent(context, isWide)),
                             const SizedBox(width: 32),
-                            // Right: Illustration
                             Expanded(
                               child: Image.asset(
                                 'assets/images/verify.png',
@@ -47,9 +45,10 @@ class SignInScreen extends StatelessWidget {
                       : Column(
                           children: [
                             const SizedBox(height: 24),
-                            Image.asset('assets/images/verify.png', height: 200),
+                            Image.asset('assets/images/verify.png',
+                                height: 200),
                             const SizedBox(height: 16),
-                            _buildFormContent(isWide),
+                            _buildFormContent(context, isWide),
                           ],
                         ),
                 ),
@@ -61,7 +60,10 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFormContent(bool isWide) {
+  Widget _buildFormContent(BuildContext context, bool isWide) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
     return Column(
       crossAxisAlignment:
           isWide ? CrossAxisAlignment.start : CrossAxisAlignment.center,
@@ -119,7 +121,7 @@ class SignInScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // Tab
+              // Tabs
               Row(
                 children: [
                   Expanded(
@@ -143,17 +145,22 @@ class SignInScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCCCCCC),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Register',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/create-account');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCCCCCC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Register',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -162,6 +169,7 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(
@@ -171,40 +179,49 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Forgot Password ?',
-                        style: GoogleFonts.inter(fontSize: 12),
-                      ),
+                  suffixIcon: TextButton(
+                    onPressed: () {
+                      // Placeholder - nanti bisa diarahkan ke screen lupa password
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Forgot Password clicked")),
+                      );
+                    },
+                    child: Text(
+                      'Forgot Password ?',
+                      style: GoogleFonts.inter(fontSize: 12),
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6A9C89), Color(0xFF16423C)],
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/openning');
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6A9C89), Color(0xFF16423C)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  'Log in',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Log in',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -221,25 +238,38 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _socialButton(
+                context,
                 icon: 'assets/images/google.png',
                 label: 'Continue with Google',
+                onTap: () {
+                  print('Google sign in clicked');
+                },
               ),
               const SizedBox(height: 12),
               _socialButton(
+                context,
                 icon: 'assets/images/facebook.png',
                 label: 'Continue with Facebook',
+                onTap: () {
+                  print('Facebook sign in clicked');
+                },
               ),
               const SizedBox(height: 16),
-              Text.rich(
-                TextSpan(
-                  text: "Don't have an account? ",
-                  style: GoogleFonts.inter(),
-                  children: [
-                    TextSpan(
-                      text: 'Sign Up',
-                      style: GoogleFonts.inter(color: Colors.blue),
-                    )
-                  ],
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/create-account');
+                },
+                child: Text.rich(
+                  TextSpan(
+                    text: "Don't have an account? ",
+                    style: GoogleFonts.inter(),
+                    children: [
+                      TextSpan(
+                        text: 'Sign Up',
+                        style: GoogleFonts.inter(color: Colors.blue),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -249,23 +279,30 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Widget _socialButton({required String icon, required String label}) {
-    return Container(
-      height: 46,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(width: 0.77, color: Colors.grey.shade300),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 18.37),
-      child: Row(
-        children: [
-          Image.asset(icon, height: 24),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
-          )
-        ],
+  Widget _socialButton(BuildContext context,
+      {required String icon,
+      required String label,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 46,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(width: 0.77, color: Colors.grey.shade300),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18.37),
+        child: Row(
+          children: [
+            Image.asset(icon, height: 24),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style:
+                  GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
+            )
+          ],
+        ),
       ),
     );
   }
