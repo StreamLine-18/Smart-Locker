@@ -5,86 +5,124 @@ class OpenningScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          child: SizedBox(
-            width: double.infinity,
-            child: Column(
-              children: [
-                const SizedBox(height: 50),
-                Image.asset(
-                  'assets/images/logo1.png',
-                  width: 180,
-                  height: 180,
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  'Smart Locker',
-                  style: TextStyle(
-                    color: const Color(0xFF4D3E3E),
-                    fontSize: 36,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.36,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(2, 3),
-                        blurRadius: 2,
-                        color: Colors.black.withOpacity(0.1),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 80),
-                const Text(
-                  'Explore the app',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF4D3E3E),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-                  child: Text(
-                    'Now your finances are in one place and always under control',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A9C89),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/sign-in');
-                      },
-                      child: const Text(
-                        'Start',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background Gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFDCF0E5), Color(0xFF9AC5A9)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
-        ),
+
+          // Floating Graphic Decoration (optional)
+          Positioned(
+            top: -40,
+            left: -40,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Illustration
+                    Image.asset(
+                      'assets/images/logo1.png',
+                      height: 250,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // App Name
+                    Text(
+                      'Smart Locker',
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF16423C),
+                        letterSpacing: 0.5,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 6,
+                            color: Colors.black.withOpacity(0.1),
+                            offset: const Offset(2, 2),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    const Text(
+                      'Secure. Smart. Simple.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        'Manage your lockers from anywhere with one click. Let’s get started!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 36),
+
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/create-account');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A9C89),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        'Start Now',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
