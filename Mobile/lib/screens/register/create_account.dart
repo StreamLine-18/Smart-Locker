@@ -2,30 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:register_smartlocker/widgets/custom_textfield.dart';
 import 'package:register_smartlocker/widgets/primary_button.dart';
 
-class CreateAccountScreen extends StatefulWidget {
+/// Screen untuk pembuatan akun baru (Register Page)
+class CreateAccountScreen extends StatelessWidget {
   const CreateAccountScreen({super.key});
-
-  @override
-  State<CreateAccountScreen> createState() => _CreateAccountScreenState();
-}
-
-class _CreateAccountScreenState extends State<CreateAccountScreen> {
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    // Controller untuk input form
+    final TextEditingController firstNameController = TextEditingController();
+    final TextEditingController lastNameController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController =
+        TextEditingController();
 
     return Scaffold(
       backgroundColor: const Color(0xFF6DD6AE),
       body: SafeArea(
         child: Stack(
           children: [
+            // ======== Background Gradien ========
             Container(
               width: size.width,
               height: size.height,
@@ -40,6 +38,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
             ),
+
+            // ======== Latar Putih Melengkung (Card Input) ========
             Positioned(
               top: size.height * 0.28,
               left: -size.width * 0.1,
@@ -52,6 +52,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
             ),
+
+            // ======== Logo dan Judul App ========
             Positioned(
               top: 20,
               left: 20,
@@ -63,6 +65,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     height: 24,
                   ),
                   const SizedBox(width: 2),
+                  // const SizedBox(height: 20),
                   const Text(
                     'Smart Locker',
                     style: TextStyle(
@@ -75,6 +78,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ],
               ),
             ),
+
+            // ======== Judul dan Deskripsi Halaman Register ========
             Positioned(
               top: size.height * 0.1,
               left: 22,
@@ -91,6 +96,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       color: Colors.white,
                     ),
                   ),
+                  SizedBox(height: 0),
                   Text(
                     'your Account',
                     style: TextStyle(
@@ -100,6 +106,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       color: Colors.white,
                     ),
                   ),
+                  SizedBox(height: 1),
                   Text(
                     'Enter your email and password to log in',
                     style: TextStyle(
@@ -112,6 +119,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ],
               ),
             ),
+
+            // ======== Gambar Hiasan (Note) ========
             Positioned(
               top: 20,
               right: 20,
@@ -122,14 +131,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 fit: BoxFit.contain,
               ),
             ),
+
+            // ======== Form Input dan Tombol ========
             Positioned.fill(
               top: size.height * 0.35,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
                   children: [
+                    // ======== Tab Login / Register ========
                     Row(
                       children: [
+                        // Tombol Login
                         Expanded(
                           child: Container(
                             height: 41,
@@ -139,7 +152,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             ),
                             child: TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/sign-in');
+                                // Navigasi ke halaman login
+                                Navigator.pushNamed(context, '/login');
                               },
                               child: const Text(
                                 'Log in',
@@ -153,6 +167,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           ),
                         ),
                         const SizedBox(width: 10),
+                        // Tab Aktif Register
                         Expanded(
                           child: Container(
                             height: 41,
@@ -183,7 +198,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 20),
+
+                    // ======== Input Nama Depan dan Belakang ========
                     Row(
                       children: [
                         Expanded(
@@ -201,17 +219,25 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 12),
+
+                    // ======== Input Email ========
                     CustomTextField(
                       controller: emailController,
                       hintText: 'E-mail',
                     ),
+
                     const SizedBox(height: 12),
+
+                    // ======== Input Password ========
                     CustomTextField(
                       controller: passwordController,
                       hintText: 'Password',
                       obscureText: true,
                     ),
+
+                    // Keterangan Password
                     const Padding(
                       padding: EdgeInsets.only(top: 4, left: 8),
                       child: Align(
@@ -222,50 +248,30 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 12),
+
+                    // ======== Konfirmasi Password ========
                     CustomTextField(
                       controller: confirmPasswordController,
                       hintText: 'Confirm Password',
                       obscureText: true,
                     ),
+
                     const SizedBox(height: 24),
+
+                    // ======== Tombol Buat Akun ========
                     PrimaryButton(
                       text: 'Create Account',
                       onPressed: () {
-                        final firstName = firstNameController.text.trim();
-                        final lastName = lastNameController.text.trim();
-                        final email = emailController.text.trim();
-                        final password = passwordController.text;
-                        final confirmPassword = confirmPasswordController.text;
-
-                        if (firstName.isEmpty ||
-                            lastName.isEmpty ||
-                            email.isEmpty ||
-                            password.isEmpty ||
-                            confirmPassword.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please fill in all fields.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                        if (password != confirmPassword) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Passwords do not match.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                        Navigator.pushNamed(context, '/email-verification');
+                        Navigator.pushNamed(context, '/verify');
+                        // TODO: Tambahkan logika pendaftaran akun
                       },
                     ),
+
                     const SizedBox(height: 16),
+
+                    // ======== Syarat dan Ketentuan ========
                     const Text.rich(
                       TextSpan(
                         text: 'By continuing, you agree to our ',
@@ -290,6 +296,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
+
                     const SizedBox(height: 40),
                   ],
                 ),
