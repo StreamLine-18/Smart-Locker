@@ -45,7 +45,7 @@ class AppRoutes {
     openning: (context) => const OpenningScreen(),
     language: (context) => const LanguageScreen(),
     editProfile: (context) => const EditProfilePage(),
-    selectLocker: (context) => const SelectLockerScreen(),
+    selectLocker: (context) => const BookingLockerScreen(),
 
   };
 }
