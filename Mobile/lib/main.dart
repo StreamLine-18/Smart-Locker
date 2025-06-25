@@ -13,7 +13,6 @@ import 'screens/register/payment_screen.dart';
 import 'screens/register/success_screen.dart';
 import 'screens/register/language.dart';
 import 'screens/register/select_locker.dart';
-import 'screens/register/logout.dart';
 
 
 
@@ -47,7 +46,8 @@ class MyApp extends StatelessWidget {
         '/success_screen': (context) => const SuccessScreen(),
         '/language': (context) => const LanguageScreen(),
         '/edit_profile': (context) => const EditProfilePage(),
-        '/logout': (context) => const LogoutConfirmationScreen(),
+        '/select_locker': (context) => const BookingLockerScreen(),
+
       },
     );
   }
