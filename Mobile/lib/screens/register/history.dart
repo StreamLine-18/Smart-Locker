@@ -91,7 +91,7 @@ class ProfileUser extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Center(
-                child: Container(
+                child: SizedBox(
                   width: 343,
                   height: 558,
                   child: Stack(
@@ -268,7 +268,7 @@ class ProfileUser extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              Container(
+              SizedBox(
                 width: 72,
                 height: 55,
                 child: Stack(

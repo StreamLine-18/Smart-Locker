@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-void main() => runApp(const BookingLockerApp());
+void main() {
+  runApp(const BookingLockerApp());
+}
 
 class BookingLockerApp extends StatelessWidget {
   const BookingLockerApp({super.key});
@@ -9,14 +10,12 @@ class BookingLockerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart Locker',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        scaffoldBackgroundColor: Colors.grey[100],
+        colorSchemeSeed: Colors.blue,
       ),
       home: const BookingLockerScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -29,269 +28,250 @@ class BookingLockerScreen extends StatefulWidget {
 }
 
 class _BookingLockerScreenState extends State<BookingLockerScreen> {
-  String selectedSize = 'Semua';
-  String selectedFilter = 'Semua';
-  String durationInput = '';
+  String selectedSize = 'All';
+  String selectedStatus = 'All';
   DateTime? selectedDate;
+  int selectedDuration = 1;
+  String? selectedLocker;
 
-  final TextEditingController durationController = TextEditingController();
+  final allLockers = [
+    {'number': '01', 'size': 'Small', 'status': 'Available'},
+    {'number': '02', 'size': 'Medium', 'status': 'Occupied'},
+    {'number': '03', 'size': 'Large', 'status': 'Available'},
+    {'number': '04', 'size': 'Small', 'status': 'Occupied'},
+    {'number': '05', 'size': 'Medium', 'status': 'Available'},
+    {'number': '06', 'size': 'Large', 'status': 'Available'},
+  ];
 
-  final List<String> sizes = ['Semua', 'S', 'M', 'L'];
-  final List<String> filters = ['Semua', 'Tersedia', 'Terisi'];
+  List<Map<String, String>> get filteredLockers {
+    return allLockers.where((locker) {
+      final matchSize = selectedSize == 'All' || locker['size'] == selectedSize;
+      final matchStatus = selectedStatus == 'All' || locker['status'] == selectedStatus;
+      return matchSize && matchStatus;
+    }).toList();
+  }
 
-  final List<Map<String, dynamic>> lockers = List.generate(12, (index) {
-    return {
-      'id': index + 1,
-      'size': ['S', 'M', 'L'][index % 3],
-      'available': index % 4 != 0,
-    };
-  });
-
-  Future<void> _pickDate(BuildContext context) async {
-    final picked = await showDatePicker(
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
     );
     if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-      });
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+      if (pickedTime != null) {
+        setState(() => selectedDate = DateTime(
+              picked.year,
+              picked.month,
+              picked.day,
+              pickedTime.hour,
+              pickedTime.minute,
+            ));
+      }
+    }
+  }
+
+  void _confirmSelection() {
+    if (selectedLocker != null && selectedDate != null) {
+      final endDate = selectedDate!.add(Duration(hours: selectedDuration));
+      showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Booking Confirmed'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Locker: $selectedLocker'),
+                Text('Start: ${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year} at ${selectedDate!.hour.toString().padLeft(2, '0')}:${selectedDate!.minute.toString().padLeft(2, '0')}'),
+                Text('End: ${endDate.day}/${endDate.month}/${endDate.year} at ${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}'),
+                const SizedBox(height: 10),
+                const Text('Thank you for booking!', style: TextStyle(fontWeight: FontWeight.w500)),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a locker, date, and duration'),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = screenWidth > 600 ? 4 : 2;
-
-    final filteredLockers = lockers.where((locker) {
-      final sizeMatch =
-          selectedSize == 'Semua' || locker['size'] == selectedSize;
-      final filterMatch = selectedFilter == 'Semua' ||
-          (selectedFilter == 'Tersedia' && locker['available']) ||
-          (selectedFilter == 'Terisi' && !locker['available']);
-      return sizeMatch && filterMatch;
-    }).toList();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Booking Locker'),
+        title: const Text('Select Locker'),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-      ),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(Icons.settings, color: Colors.deepPurple),
-                            SizedBox(width: 8),
-                            Text(
-                              "Pengaturan Booking",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.deepPurple,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                value: selectedSize,
-                                decoration: const InputDecoration(
-                                  labelText: 'Ukuran Locker',
-                                  border: OutlineInputBorder(),
-                                ),
-                                items: sizes
-                                    .map((s) => DropdownMenuItem(
-                                        value: s, child: Text(s)))
-                                    .toList(),
-                                onChanged: (val) =>
-                                    setState(() => selectedSize = val!),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                value: selectedFilter,
-                                decoration: const InputDecoration(
-                                  labelText: 'Status Locker',
-                                  border: OutlineInputBorder(),
-                                ),
-                                items: filters
-                                    .map((f) => DropdownMenuItem(
-                                        value: f, child: Text(f)))
-                                    .toList(),
-                                onChanged: (val) =>
-                                    setState(() => selectedFilter = val!),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: durationController,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Durasi (jam)',
-                                  prefixIcon: Icon(Icons.timer),
-                                  border: OutlineInputBorder(),
-                                ),
-                                onChanged: (val) =>
-                                    setState(() => durationInput = val),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => _pickDate(context),
-                                child: AbsorbPointer(
-                                  child: TextFormField(
-                                    decoration: InputDecoration(
-                                      labelText: 'Tanggal Booking',
-                                      prefixIcon:
-                                          const Icon(Icons.calendar_today),
-                                      border: const OutlineInputBorder(),
-                                      hintText: 'Pilih tanggal',
-                                      suffixIcon:
-                                          const Icon(Icons.edit_calendar),
-                                    ),
-                                    controller: TextEditingController(
-                                      text: selectedDate != null
-                                          ? DateFormat('dd MMM yyyy')
-                                              .format(selectedDate!)
-                                          : '',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue, Colors.blueAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final locker = filteredLockers[index];
-                    final isAvailable = locker['available'];
-
-                    return GestureDetector(
-                      onTap: isAvailable &&
-                              durationInput.isNotEmpty &&
-                              selectedDate != null
-                          ? () => showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                  title: const Text("Konfirmasi Booking"),
-                                  content: Text(
-                                      "Booking Locker #${locker['id']} (Ukuran ${locker['size']}) untuk $durationInput jam pada ${DateFormat('dd MMM yyyy').format(selectedDate!)}?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context),
-                                      child: const Text("Batal"),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                                'Locker #${locker['id']} berhasil dibooking!'),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text("Ya, Booking"),
-                                    )
-                                  ],
-                                ),
-                              )
-                          : null,
-                      child: Card(
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        color: isAvailable
-                            ? Colors.green.shade50
-                            : Colors.grey.shade300,
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isAvailable
-                                    ? Icons.lock_open
-                                    : Icons.lock,
-                                size: 28,
-                                color: isAvailable
-                                    ? Colors.green
-                                    : Colors.grey.shade700,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                "Locker #${locker['id']}",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: isAvailable
-                                      ? Colors.black
-                                      : Colors.grey.shade600,
-                                ),
-                              ),
-                              Text("Ukuran: ${locker['size']}"),
-                              const SizedBox(height: 4),
-                              Text(
-                                isAvailable ? "Tersedia" : "Terisi",
-                                style: TextStyle(
-                                  color: isAvailable
-                                      ? Colors.green
-                                      : Colors.grey.shade600,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(labelText: 'Locker Size'),
+                          value: selectedSize,
+                          items: ['All', 'Small', 'Medium', 'Large']
+                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                              .toList(),
+                          onChanged: (value) => setState(() => selectedSize = value!),
                         ),
                       ),
-                    );
-                  },
-                  childCount: filteredLockers.length,
-                ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(labelText: 'Locker Status'),
+                          value: selectedStatus,
+                          items: ['All', 'Available', 'Occupied']
+                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                              .toList(),
+                          onChanged: (value) => setState(() => selectedStatus = value!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.calendar_today),
+                          label: Text(selectedDate == null
+                              ? 'Pick Date & Time'
+                              : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year} ${selectedDate!.hour.toString().padLeft(2, '0')}:${selectedDate!.minute.toString().padLeft(2, '0')}'),
+                          onPressed: () => _selectDate(context),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: selectedDuration.toString(),
+                          decoration: const InputDecoration(labelText: 'Duration (hours)'),
+                          keyboardType: TextInputType.number,
+                          onChanged: (val) => setState(() {
+                            selectedDuration = int.tryParse(val) ?? 1;
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.builder(
+                itemCount: filteredLockers.length,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.85,
+                  childAspectRatio: 1,
+                ),
+                itemBuilder: (context, index) {
+                  final locker = filteredLockers[index];
+                  final isAvailable = locker['status'] == 'Available';
+                  final isSelected = selectedLocker == locker['number'];
+
+                  return GestureDetector(
+                    onTap: isAvailable
+                        ? () => setState(() => selectedLocker = locker['number'])
+                        : null,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        color: isAvailable ? Colors.green[50] : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(12),
+                        border: isSelected ? Border.all(color: Colors.blue, width: 2) : null,
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            isAvailable ? Icons.lock_open : Icons.lock,
+                            color: isAvailable ? Colors.green : Colors.grey,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Locker ${locker['number']}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text('Size: ${locker['size']}'),
+                          const SizedBox(height: 4),
+                          Text(
+                            locker['status']!,
+                            style: TextStyle(
+                              color: isAvailable ? Colors.green : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _confirmSelection,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Confirm Selection',
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ),
