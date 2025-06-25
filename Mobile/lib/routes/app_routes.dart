@@ -12,7 +12,7 @@ import '../screens/register/profile.dart';
 import '../screens/register/openning.dart';
 import '../screens/register/language.dart';
 import '../screens/register/select_locker.dart';
-
+import '../screens/home.dart'; // Tambahkan import ini
 
 class AppRoutes {
   static const String home = '/home';
@@ -28,9 +28,7 @@ class AppRoutes {
   static const String language = '/language';
   static const String editProfile = '/edit_profile';
   static const String selectLocker = '/select_locker';
-
-
-
+  static const String homeScreen2 = '/main'; // Tambahkan route baru
 
   static final Map<String, WidgetBuilder> routes = {
     home: (context) => const HomeScreen(),
@@ -46,6 +44,6 @@ class AppRoutes {
     language: (context) => const LanguageScreen(),
     editProfile: (context) => const EditProfilePage(),
     selectLocker: (context) => const BookingLockerScreen(),
-
+    homeScreen2: (context) => MainHome(), // Tambahkan baris ini
   };
 }
