@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// EmailVerificationScreen
+/// Halaman untuk verifikasi email dengan input kode OTP
+/// Desain responsif untuk iPhone 14 Pro Max, iPad, hingga laptop
+
 class EmailVerificationScreen extends StatefulWidget {
   const EmailVerificationScreen({super.key});
 
   @override
-  State<EmailVerificationScreen> createState() =>
-      _EmailVerificationScreenState();
+  State<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
 }
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   int _timer = 20;
 
   @override
@@ -44,10 +46,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   void _submitCode() {
     String code = _controllers.map((c) => c.text).join();
     debugPrint('Kode verifikasi: $code');
-
-    // TODO: Validasi kode dengan backend
-    // Jika berhasil:
-    Navigator.pushReplacementNamed(context, '/openning');
+    // TODO: Kirim kode ke backend untuk verifikasi
   }
 
   @override
@@ -72,7 +71,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           child: Column(
             children: [
               const SizedBox(height: 48),
-              // Branding Logo
+
+              // Logo + Text Branding
               Row(
                 children: [
                   Image.asset(
@@ -86,19 +86,27 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
+                      height: 1.4,
+                      letterSpacing: -0.01,
                       color: Colors.white,
                     ),
                   ),
                 ],
               ),
+
               const SizedBox(height: 24),
+
+              // Ilustrasi password
               Image.asset(
                 'assets/images/password.png',
                 width: size.width * 0.9,
                 height: size.height * 0.25,
                 fit: BoxFit.contain,
               ),
+
               const SizedBox(height: 16),
+
+              // Judul
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -106,26 +114,33 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w800,
                     fontSize: 26,
+                    height: 1.0,
                     color: Colors.white,
                   ),
                 ),
               ),
+
               const SizedBox(height: 8),
+
+              // Deskripsi
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'We’ve sent an Email with an activation code to your Email',
+                  'We\u2019ve sent an Email with an activation code to your Email',
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w400,
                     fontSize: 11,
+                    height: 1.25,
                     color: Colors.white,
                   ),
                 ),
               ),
+
               const SizedBox(height: 32),
+
+              // Container Putih berisi input OTP
               Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
@@ -133,6 +148,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Label
                     Text(
                       'Enter Your code number',
                       style: GoogleFonts.inter(
@@ -142,6 +158,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // OTP Input Fields
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(6, (index) {
@@ -155,8 +173,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                             maxLength: 1,
                             decoration: InputDecoration(
                               counterText: '',
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 12),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -172,7 +189,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         );
                       }),
                     ),
+
                     const SizedBox(height: 24),
+
+                    // Timer
                     Center(
                       child: Text(
                         'Send code again 00:${_timer.toString().padLeft(2, '0')}',
@@ -182,14 +202,16 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 24),
+
+                    // Tombol Submit
                     Center(
                       child: ElevatedButton(
                         onPressed: _submitCode,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF6DD6AE),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -204,8 +226,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(
-                        height: 200), // Untuk hindari keyboard overlap
+
+                    const SizedBox(height: 200), // Padding tambahan untuk keyboard
                   ],
                 ),
               ),
