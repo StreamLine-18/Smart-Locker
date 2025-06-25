@@ -1,32 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:register_smartlocker/routes/app_routes.dart';
-import '/widgets/custom_button.dart';
-
-// Langsung warna dan textstyle di dalam file
-class AppColors {
-  static const primary = Color(0xFF6A9C89);
-  static const secondary = Color(0xFF16423C);
-  static const grey = Color(0xFFC4DAD2);
-  static const textBlack = Colors.black;
-}
-
-class AppTextStyles {
-  static const heading = TextStyle(
-    fontSize: 28.8,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textBlack,
-  );
-  static const normal = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textBlack,
-  );
-  static const buttonText = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    color: Colors.white,
-  );
-}
+import '/routes/app_routes.dart';
 
 class SuccessScreen extends StatelessWidget {
   const SuccessScreen({super.key});
@@ -35,107 +8,160 @@ class SuccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF37655A),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background Circle 1
-            Positioned(
-              left: -55,
-              top: 481,
-              child: Container(
-                width: 504,
-                height: 461,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  borderRadius: BorderRadius.circular(113),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x59000000),
-                      blurRadius: 58.2,
-                    ),
-                  ],
+      body: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Kotak abu-abu besar di tengah
+          Positioned(
+            left: 42,
+            top: 100, // Lebih naik agar proporsional dengan tombol
+            child: Container(
+              width: 309,
+              height: 394,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC4DAD2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          // Gambar centang
+          Positioned(
+            left: 116,
+            top: 170, // Naik mengikuti container abu
+            child: Container(
+              width: 161,
+              height: 140,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/images.png'),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-            // Background Circle 2
-            Positioned(
-              left: -55,
-              top: 596,
-              child: Container(
-                width: 504,
-                height: 313,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(113),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x59000000),
-                      blurRadius: 58.2,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // SUCCESS Text
-            Positioned(
-              left: 76,
-              top: 516,
-              child: const Text(
-                'SUCCESS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 50,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            // Image Success
-            Positioned(
-              left: 116,
-              top: 299,
-              child: Container(
-                width: 161,
-                height: 140,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  image: const DecorationImage(
-                    image: NetworkImage('https://placehold.co/161x140'),
-                    fit: BoxFit.cover,
+          ),
+          // Background hijau gelap melengkung atas putih
+          Positioned(
+            left: -55,
+            top: 370, // Naik untuk proporsi
+            child: Container(
+              width: 504,
+              height: 461,
+              decoration: BoxDecoration(
+                color: const Color(0xFF16423C),
+                borderRadius: BorderRadius.circular(113),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 58.2,
                   ),
-                ),
+                ],
               ),
             ),
-            // Button Back Home
-            Positioned(
-              left: 95,
-              top: 655,
-              child: SizedBox(
-                width: 204,
-                height: 57,
-                child: CustomButton(
-                  text: 'Back Home',
-                  onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
-                  },
-                ),
+          ),
+          // Background putih bawah hijau
+          Positioned(
+            left: -55,
+            top: 480, // Naik untuk proporsi
+            child: Container(
+              width: 504,
+              height: 313,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(113),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 58.2,
+                  ),
+                ],
               ),
             ),
-            // Button Detail
-            Positioned(
-              left: 95,
-              top: 743,
-              child: SizedBox(
-                width: 204,
-                height: 57,
-                child: CustomButton(
-                  text: 'Detail',
-                  onPressed: () {
-                    // TODO: Tambahkan navigasi ke halaman detail jika ada
-                  },
-                ),
+          ),
+          // Tulisan SUCCESS
+          Positioned(
+            left: 76,
+            top: 400, // Ditarik naik agar tepat berada di tengah lengkungan hijau gelap
+            child: const Text(
+              'SUCCESS',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 50,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w700,
               ),
             ),
-          ],
+          ),
+          // Tombol Back Home
+          Positioned(
+            left: 95,
+            top: 520, // Naik
+            child: _buildActionButton(
+              context: context,
+              text: 'Back Home',
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.home,
+                  (route) => false,
+                );
+              },
+            ),
+          ),
+          // Tombol Detail
+          Positioned(
+            left: 95,
+            top: 600, // Naik
+            child: _buildActionButton(
+              context: context,
+              text: 'Detail',
+              onPressed: () {},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: 204,
+      height: 57,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(width: 1),
+          ),
+          elevation: 5,
+          shadowColor: Colors.black.withOpacity(0.5),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF16423C), Color(0xFF6CD6AE)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Center(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 21.29,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ),
       ),
     );
