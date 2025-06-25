@@ -8,6 +8,21 @@ With TailAdmin Next.js, you get access to all the necessary dashboard UI compone
 
 TailAdmin utilizes the powerful features of **Next.js 15** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
 
+## set env
+``` bash
+NEXT_API_KEY=AIzaSyB8B-x2eB3-nkDsbIHj1I52WafhFR6BW10
+NEXT_AUTH_DOMAIN=issmartlocker.firebaseapp.com
+NEXT_PROJECT_ID=issmartlocker
+NEXT_STORAGE_BUCKET=issmartlocker.firebasestorage.app
+NEXT_MESSAGING_SENDER_ID=291828843752
+NEXT_APP_ID=1:291828843752:web:946d1adb149a85e609755d
+
+# firebase admin
+FIREBASE_PROJECT_ID=issmartlocker
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@issmartlocker.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCx+c+IeAk/jgSl\nI4ksfwXkvJaSmMMTiI6a9Dj/hx8/f7Jr06IyDzVhQFuS1dmlMCmrK+GnQ+onAbMw\nTsIe5xhRJQlipzDL6CDs4QPNAEhVPTmkI7X62bTRo5NtDE8LII/DwmJoKFzjxHk9\nZ9oof3fdMzGMqLOROwbqXfNazc0ok8qpP3r1y9qiGYFfpFgFQ01wwdvSbtWxsMOv\nhiWSq6ht/+hRzbJKJqHxBtgJcl3BZy49GR6VM+xzYZk4J1AMI30Sno2pif6XOXQe\njVB+XxzTc2swqUFSRQKegSQR5FAeoB0HrhxIcwDU6CWzO81UxdxmN1f2wKBG/wN/\naTCDfZ4TAgMBAAECggEAAaF42dbDuu3ZtAupz5sQWkKyHIDC1NR8/gV72jeKPUI1\nx9AmHdBO3GfDDwrflihlUVizFh3EsPvOgQRPugnDCsdMmTdP9qZXWuRK7R9yCjnn\n482h9rz077DQgoDI3qC7QH9w+GRaSYn81Ge1s4ZLel7kNtY64vtH+nDG8I+PMC56\nlGNLvNE8Di3bIBed9BabLuXcOmVrgVUqKPOYK1qTt9h7uQHWEwFgc4N6wat/IOmh\nonNPHv6UppOQ/piCHEGW/8npdlmdnpj/59zWEaQj0rayvFztm3jmwBCXmMQVIduE\nFEVJd1m1HsIdUvSSvoHoX2JQ+Ps4ao7jYB4pVnMdtQKBgQDdIYnEkJzb/YHRys/k\nc26bC+MdodxFAmRpc8/5ySLB71osw8yh/HtMAAfoEjzcOz0HS5uAnZTuC61NUq+O\n8+pGD68MVy9NilR7Oyx3uVmh3umj+np5XRZsFuWz4MxSOkuFLFoi6rWJCJZYEBMm\nIy0HU9qQm1J83j/ZpkQjz7ZXTQKBgQDOCjbU1AlSBgrfkEATWVG0GPfXcilO7NPs\nMgLbBfdIyt8K2kntoGUDSKHi5kMFSwJ8K7TLPXM8Jz0cuEcRIOClelc0eVQYxChT\n9uKwEQdp9xZE8orgg1pnOTupl1T/aNmhHQl7VSPLlTmufJ8VJc8GZkPmkGx6C3fI\n3Bz3+pDa3wKBgFzuOU2oUKOLOEGIcDHb6QGzzzCm00EVLkm66A5bXwYNpuHlL1xs\nFQztfmUjNPyA0Lb+KU21697WfXBfbXQwQaZL9Q7EnRaDKdnYFmoCNQ739Ux6eXoD\niubGAKbFtFhiM1a2OvMtnDkIqNY9ey6t3cCUlufqvpHHfSHk5AIAyuqJAoGACGW0\nLGJj6triMJBhfChkwxFNcJNviY7vaC31ndWVaXsTMg8JekzSMRsRtfyqeJnBBSyG\n1s2vV6FFxVjhVJphbX0Z9sKHIedEuX9TZ9eZ1MDEQJUeAd54ncJgYx4O0cYFMKLN\nUyB6L/7p9emQVj1PPbSHSetS8HptLFuENrsYkkMCgYBkpwbpEu81e5HBHCF4IRNY\n/c5w7x5H9b/pfbeNWoVd5ktuNFBKfZfDOX9DZRfTwe/YLhrFJuE+9dcr7VVziatQ\ns2YsSWSSUUEMJFYyadPWnNOtXGKCnNVY5+YrU7cjjKaVGe96aoM/bRRisPoBHc6l\n628ULjpxiCnR9cKEpt17Aw==\n-----END PRIVATE KEY-----\n
+```
+
 ## Overview
 
 TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
