@@ -1,9 +1,29 @@
 "use client";
-import React from "react";
+import React, {useState, useEffect} from "react";
+// import adminService from "@/service/adminService";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
 
 export const EcommerceMetrics = () => {
+  const [totalUser, setTotalUser] = useState<number | null>(null);
+  const [totalOrder, setTotalOrder] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fecthTotalUser() {
+      const res = await fetch("/api/admin/totalUsers");
+      const data = await res.json();
+      setTotalUser(data.count);
+    }
+    async function fetchTotalOrder() {
+      const res = await fetch("/api/admin/totalOrders");
+      const data = await res.json();
+      setTotalOrder(data.count);
+    }
+
+    fetchTotalOrder();
+    fecthTotalUser();
+  }, []);
+  
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
       {/* <!-- Metric Item Start --> */}
@@ -15,10 +35,10 @@ export const EcommerceMetrics = () => {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Customers
+              Total Users Login
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
+              {totalUser !== null ? totalUser : "Loading..."}
             </h4>
           </div>
           <Badge color="success">
@@ -40,7 +60,7 @@ export const EcommerceMetrics = () => {
               Orders
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              5,359
+              {totalOrder !== null ? totalOrder : "Loading..."}
             </h4>
           </div>
 
