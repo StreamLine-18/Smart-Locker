@@ -9,7 +9,7 @@ import Badge from "../ui/badge/Badge";
 import Image from "next/image";
 import { useLockers } from "./hooks/lockerCard.hooks";
 
-export default function RecentOrders() {
+export default function RecentOrders() { //
   const { lockers, loading } = useLockers();
 
   return (
