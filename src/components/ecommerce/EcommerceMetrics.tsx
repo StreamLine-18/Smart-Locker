@@ -2,7 +2,7 @@
 import React, {useState, useEffect} from "react";
 // import adminService from "@/service/adminService";
 import Badge from "../ui/badge/Badge";
-import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
+import {  ArrowUpIcon, GroupIcon } from "@/icons";
 
 export const EcommerceMetrics = () => {
   const [totalUser, setTotalUser] = useState<number | null>(null);

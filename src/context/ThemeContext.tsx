@@ -5,7 +5,7 @@ import { createContext, useState, useContext, useEffect } from "react";
 
 type Theme = "light" | "dark";
 
-type ThemeContextType = {
+type ThemeContextType = { //turki ganteg
   theme: Theme;
   toggleTheme: () => void;
 };
