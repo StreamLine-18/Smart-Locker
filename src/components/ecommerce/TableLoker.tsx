@@ -9,7 +9,7 @@ import Badge from "../ui/badge/Badge";
 import Image from "next/image";
 import { useLockers } from "./hooks/lockerCard.hooks";
 
-export default function RecentOrders() { //
+export default function TableLoker() { 
   const { lockers, loading } = useLockers();
 
   return (
@@ -21,9 +21,9 @@ export default function RecentOrders() { //
           </h3>
         </div>
       </div>
-      {/* Tambahkan max-h-XX dan overflow-y-auto di sini */}
-      <div className="max-w-full overflow-hidden max-h-80 ">
-        <div className="overflow-y-auto max-w-full max-h-80">
+
+      <div className="max-w-full overflow-hidden">
+        <div className="overflow-y-auto max-w-full max-h-[400px]">
 
         <Table>
           {/* Table Header */}
@@ -67,7 +67,7 @@ export default function RecentOrders() { //
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5}>Loading...</TableCell>
+                <TableCell>Loading...</TableCell>
               </TableRow>
             ) : (
               lockers.map((locker) => (
@@ -104,10 +104,8 @@ export default function RecentOrders() { //
                       size="sm"
                       color={
                         locker.doorStatus === "booking"
-                          ? "booking"
-                          : locker.doorStatus === "closed"
-                          ? "Pending" // Ini terlihat seperti typo, mungkin maksudnya "closed"
-                          : "closed" // Ini juga
+                          ? "warning"
+                          : "success"
                       }
                     >
                       {locker.doorStatus}
