@@ -1,14 +1,14 @@
 'use client';
 
-import type { Metadata } from "next";
+// import type { Metadata } from "next";
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import { useLockers } from "@/components/ecommerce/hooks/lockerCard.hooks";
 import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
+// import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
+// import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
+// import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
-import LockerCard from "@/components/ecommerce/lockerCard";
+// import LockerCard from "@/components/ecommerce/lockerCard";
 
 
 export default function Ecommerce() {
