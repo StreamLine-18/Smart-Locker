@@ -6,16 +6,18 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   // BoxCubeIcon,
-  // CalenderIcon,
+  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   // ListIcon,
   // PageIcon,
   // PieChartIcon,
+  LockIcon,
   PlugInIcon,
   // TableIcon,
   UserCircleIcon,
+  UserIcon,
 } from "../icons/index";
 
 
@@ -41,6 +43,36 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "User Profile",
     path: "/profile",
+  },
+
+  {
+    icon: <UserIcon />, // Anda perlu membuat/mengimpor icon ini
+    name: "User Management",
+    subItems: [
+      { name: "All Users", path: "/users" },
+      { name: "Add New User", path: "/users/new" },
+      { name: "Activity Logs", path: "/users/activity-logs" },
+    ],
+  },
+
+   {
+    icon: <LockIcon />, // Anda perlu membuat/mengimpor icon ini
+    name: "Locker Management",
+    subItems: [
+      { name: "All Lockers", path: "/lockers" },
+      { name: "Locker Groups", path: "/locker-groups" },
+      { name: "Maintenance", path: "/locker-maintenance" },
+    ],
+  },
+
+  {
+    icon: <CalenderIcon />,
+    name: "Booking System",
+    subItems: [
+      { name: "New Booking", path: "/bookings/new" },
+      { name: "Booking History", path: "/bookings" },
+      { name: "Scheduled", path: "/bookings/scheduled" },
+    ],
   },
 
   // {
