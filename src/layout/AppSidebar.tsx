@@ -48,22 +48,18 @@ const navItems: NavItem[] = [
   {
     icon: <UserIcon />, // Anda perlu membuat/mengimpor icon ini
     name: "User Management",
-    subItems: [
-      { name: "All Users", path: "/users" },
-      { name: "Add New User", path: "/users/new" },
-      { name: "Activity Logs", path: "/users/activity-logs" },
-    ],
+    path: "/user",
   },
 
-   {
-    icon: <LockIcon />, // Anda perlu membuat/mengimpor icon ini
-    name: "Locker Management",
-    subItems: [
-      { name: "All Lockers", path: "/lockers" },
-      { name: "Locker Groups", path: "/locker-groups" },
-      { name: "Maintenance", path: "/locker-maintenance" },
-    ],
-  },
+  //  {
+  //   icon: <LockIcon />, // Anda perlu membuat/mengimpor icon ini
+  //   name: "Locker Management",
+  //   subItems: [
+  //     { name: "All Lockers", path: "/lockers" },
+  //     { name: "Locker Groups", path: "/locker-groups" },
+  //     { name: "Maintenance", path: "/locker-maintenance" },
+  //   ],
+  // },
 
   {
     icon: <CalenderIcon />,
