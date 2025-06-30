@@ -20,7 +20,7 @@ export default function Ecommerce() {
         <Monitoring /> 
       </div> 
         <div className="col-span-12">
-        <TableLoker />  {/* ini lokerrr */}
+        <TableLoker /> 
       </div> 
 
       {/* <div className="col-span-12 xl:col-span-7">

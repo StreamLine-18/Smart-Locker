@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
+    name: "admin-Profile",
     path: "/profile",
   },
  
@@ -46,7 +46,6 @@ const navItems: NavItem[] = [
     name: "User Management",
     subItems: [
       { name: "All Users", path: "/users" },
-      { name: "Add New User", path: "/users/new" },
       { name: "Activity Logs", path: "/users/activity-logs" },
     ],
   },
@@ -56,7 +55,6 @@ const navItems: NavItem[] = [
     name: "Locker Management",
     subItems: [
       { name: "All Lockers", path: "/lockers" },
-      { name: "Locker Groups", path: "/locker-groups" },
       { name: "Maintenance", path: "/locker-maintenance" },
     ],
   },
