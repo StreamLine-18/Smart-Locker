@@ -45,7 +45,8 @@ const navItems: NavItem[] = [
     icon: <UserIcon />, // Anda perlu membuat/mengimpor icon ini
     name: "User Management",
     subItems: [
-      { name: "All Users", path: "users/all-user" },
+      { name: "All Users", path: "/users" },
+      { name: "Add New User", path: "/users/new" },
       { name: "Activity Logs", path: "/users/activity-logs" },
     ],
   },

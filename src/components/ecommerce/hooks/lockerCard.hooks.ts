@@ -21,5 +21,5 @@ export function useLockers() {
     fetchLockers();
   }, []);
 
-  return { lockers, loading };
+  return { lockers, loading, setLockers };
 }

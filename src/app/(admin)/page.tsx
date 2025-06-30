@@ -1,13 +1,13 @@
 'use client';
 
 // import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
+import { Monitoring } from "@/components/ecommerce/TotalMonitoring";
 import { useLockers } from "@/components/ecommerce/hooks/lockerCard.hooks";
 import React from "react";
 // import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
 // import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 // import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
+import TableLoker from "@/components/ecommerce/TableLoker";
 // import LockerCard from "@/components/ecommerce/lockerCard";
 
 
@@ -17,7 +17,10 @@ export default function Ecommerce() {
   return (
 <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12"> 
-        <EcommerceMetrics /> 
+        <Monitoring /> 
+      </div> 
+        <div className="col-span-12">
+        <TableLoker />  {/* ini lokerrr */}
       </div> 
 
       {/* <div className="col-span-12 xl:col-span-7">
@@ -41,10 +44,6 @@ export default function Ecommerce() {
           ))
         )}
       </div> */}
-      <div className="col-span-12">
-        <RecentOrders />  {/* ini lokerrr */}
-      </div> 
-
     </div>
   );
 }
