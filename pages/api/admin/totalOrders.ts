@@ -8,11 +8,15 @@ export default async function handler(
 ) {
   try {
     const db = getFirestore(admin.app());
+
+    // Gunakan count query (efisien, nggak ngambil semua dokumen)
     const snapshot = await db.collection("orders").count().get();
-    const count = snapshot.data().count;
+
+    const count = snapshot.data()?.count ?? 0;
+
     res.status(200).json({ count });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error("🔥 Error in /totalOrders:", error.message);
     res.status(500).json({ error: "Failed to fetch order count" });
   }
 }

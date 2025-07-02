@@ -8,17 +8,18 @@ export default async function handler(
 ) {
   try {
     const db = getFirestore(admin.app());
+
     const snapshot = await db.collection("payments").get();
-    let totalAmount = 0;
-    snapshot.forEach((doc) => {
+
+    const totalAmount = snapshot.docs.reduce((sum, doc) => {
       const data = doc.data();
-      if (typeof data.amount === "number") {
-        totalAmount += data.amount;
-      }
-    });
-    res.status(200).json({ totalAmount });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch total pendapatan" });
+      const amount = typeof data.amount === "number" ? data.amount : 0;
+      return sum + amount;
+    }, 0);
+
+    return res.status(200).json({ totalAmount });
+  } catch (error: any) {
+    console.error("🔥 Error in /totalPayment:", error.message);
+    return res.status(500).json({ error: "Failed to fetch total pendapatan" });
   }
 }

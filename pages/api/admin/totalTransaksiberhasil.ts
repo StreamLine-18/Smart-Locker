@@ -8,20 +8,12 @@ export default async function handler(
 ) {
   try {
     const db = getFirestore(admin.app());
-    // Ambil semua data dari koleksi 'invoices'
-    const invoicesSnapshot = await db.collection("invoices").get();
-    const invoices = invoicesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const snapshot = await db.collection("invoices").count().get(); // 👈 efisien
+    const totalTransaksi = snapshot.data().count;
 
-    res.status(200).json({
-      invoices,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Failed to fetch invoices data",
-    });
+    res.status(200).json({ totalTransaksi });
+  } catch (error: any) {
+    console.error("🔥 Error fetching invoices:", error.message);
+    res.status(500).json({ error: "Failed to fetch total invoices" });
   }
 }
