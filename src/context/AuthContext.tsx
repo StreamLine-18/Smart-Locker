@@ -47,7 +47,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error: null,
   });
 
-  // Convert Firebase User to AuthUser
   const convertFirebaseUser = (user: User): AuthUser => ({
     uid: user.uid,
     email: user.email,
@@ -56,7 +55,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     emailVerified: user.emailVerified,
   });
 
-  // Fetch user profile from Firestore
   const fetchUserProfile = async (uid: string): Promise<UserProfile | null> => {
     try {
       const userDoc = await getDoc(doc(db, 'users', uid));
@@ -77,7 +75,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Create user profile in Firestore
   const createUserProfile = async (user: User, additionalData: Partial<UserProfile> = {}): Promise<UserProfile> => {
     const userProfile: UserProfile = {
       uid: user.uid,
@@ -96,23 +93,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ...additionalData,
     };
 
-    // Check if profile is complete
     userProfile.isProfileComplete = !!(
       userProfile.displayName &&
       userProfile.email
     );
 
-    await setDoc(doc(db, 'users', user.uid), {
-      ...userProfile,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      lastSignIn: new Date(),
-    });
-
+    await setDoc(doc(db, 'users', user.uid), userProfile);
     return userProfile;
   };
 
-  // Update last sign in
   const updateLastSignIn = async (uid: string) => {
     try {
       await updateDoc(doc(db, 'users', uid), {
@@ -124,9 +113,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Auth state change handler
   useEffect(() => {
+    if (!auth) return;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("🔥 onAuthStateChanged triggered", firebaseUser);
+
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       if (firebaseUser) {
@@ -134,12 +126,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const authUser = convertFirebaseUser(firebaseUser);
           let profile = await fetchUserProfile(firebaseUser.uid);
 
-          // Create profile if doesn't exist
           if (!profile) {
             const provider = firebaseUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'email';
             profile = await createUserProfile(firebaseUser, { provider });
           } else {
-            // Update last sign in
             await updateLastSignIn(firebaseUser.uid);
           }
 
@@ -151,16 +141,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             error: null,
           });
         } catch (error) {
-          console.error('Error in auth state change:', error);
+          console.error('🔥 Error in auth state change:', error);
+          const authUser = convertFirebaseUser(firebaseUser);
           setState({
-            user: null,
+            user: authUser,
             profile: null,
             isLoading: false,
-            isAuthenticated: false,
-            error: 'Failed to load user data',
+            isAuthenticated: true,
+            error: null,
           });
         }
       } else {
+        console.log("👋 User logged out or not signed in");
         setState({
           user: null,
           profile: null,
@@ -171,72 +163,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
-  // Sign in with email and password
   const signIn = async (email: string, password: string) => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth!, email, password);
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
     }
   };
 
-  // Sign up with email and password
   const signUp = async (email: string, password: string, displayName: string) => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update Firebase profile
+      const { user } = await createUserWithEmailAndPassword(auth!, email, password);
       await updateFirebaseProfile(user, { displayName });
-      
-      // Send email verification
       await sendEmailVerification(user);
-      
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
     }
   };
 
-  // Sign in with Google
   const signInWithGoogle = async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth!, googleProvider);
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
     }
   };
 
-  // Logout
   const logout = async () => {
     try {
-      await signOut(auth);
+      await signOut(auth!);
     } catch (error: any) {
       setState(prev => ({ ...prev, error: error.message }));
       throw error;
     }
   };
 
-  // Update user profile
   const updateProfile = async (data: ProfileSetupData) => {
     if (!state.user) throw new Error('No authenticated user');
 
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-      // Update Firebase profile if displayName changed
       if (data.displayName !== state.user.displayName) {
-        await updateFirebaseProfile(auth.currentUser!, { displayName: data.displayName });
+        await updateFirebaseProfile(auth!.currentUser!, { displayName: data.displayName });
       }
 
-      // Update Firestore profile
       const updatedData = {
         ...data,
         isProfileComplete: !!(data.displayName && state.profile?.email),
@@ -244,8 +224,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
 
       await updateDoc(doc(db, 'users', state.user.uid), updatedData);
-
-      // Refresh profile
       await refreshProfile();
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
@@ -253,7 +231,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Refresh user profile
   const refreshProfile = async () => {
     if (!state.user) return;
 
