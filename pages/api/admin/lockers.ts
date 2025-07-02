@@ -1,3 +1,4 @@
+// pages/api/admin/lockers.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getFirestore } from "firebase-admin/firestore";
 import admin from "@/lib/firebase_admin";
@@ -10,17 +11,19 @@ export default async function handler(
 ) {
   try {
     switch (req.method) {
-      case "DELETE": {
-        const { id } = req.query;
-        if (!id || typeof id !== "string") {
-          return res.status(400).json({ error: "Missing locker ID" });
-        }
-        await db.collection("lockers").doc(id).delete();
-        return res.status(200).json({ success: true, message: "Locker deleted successfully" });
+      case "GET": {
+        const snapshot = await db.collection("lockers").get();
+        const lockers = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        return res.status(200).json(lockers);
       }
 
       case "POST": {
         const { lockerNumber, locationId, lockStatus, doorStatus, bookingStatus, price } = req.body;
+
+        // Validasi semua field wajib
         if (
           !lockerNumber ||
           !locationId ||
@@ -31,6 +34,7 @@ export default async function handler(
         ) {
           return res.status(400).json({ error: "Missing or invalid required fields" });
         }
+
         const docRef = await db.collection("lockers").add({
           lockerNumber,
           locationId,
@@ -39,6 +43,7 @@ export default async function handler(
           bookingStatus,
           price,
         });
+
         return res.status(201).json({
           id: docRef.id,
           lockerNumber,
@@ -53,9 +58,11 @@ export default async function handler(
       case "PUT": {
         const { id } = req.query;
         const { lockerNumber, locationId, lockStatus, doorStatus, bookingStatus, price } = req.body;
+
         if (!id || typeof id !== "string") {
           return res.status(400).json({ error: "Missing locker ID" });
         }
+
         if (
           !lockerNumber ||
           !locationId ||
@@ -66,6 +73,7 @@ export default async function handler(
         ) {
           return res.status(400).json({ error: "Missing or invalid required fields" });
         }
+
         await db.collection("lockers").doc(id).update({
           lockerNumber,
           locationId,
@@ -74,6 +82,7 @@ export default async function handler(
           bookingStatus,
           price,
         });
+
         return res.status(200).json({
           id,
           lockerNumber,
@@ -86,13 +95,16 @@ export default async function handler(
         });
       }
 
-      case "GET": {
-        const snapshot = await db.collection("lockers").get();
-        const lockers = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        return res.status(200).json(lockers);
+      case "DELETE": {
+        const { id } = req.query;
+
+        if (!id || typeof id !== "string") {
+          return res.status(400).json({ error: "Missing locker ID" });
+        }
+
+        await db.collection("lockers").doc(id).delete();
+
+        return res.status(200).json({ success: true, message: "Locker deleted successfully" });
       }
 
       default:

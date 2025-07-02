@@ -1,27 +1,23 @@
 <<<<<<< HEAD
-# TailAdmin Next.js - Free Next.js Tailwind Admin Dashboard Template
 
-TailAdmin is a free and open-source admin dashboard template built on **Next.js and Tailwind CSS** providing developers with everything they need to create a feature-rich and data-driven: back-end, dashboard, or admin panel solution for any sort of web project.
-
-![TailAdmin - Next.js Dashboard Preview](./banner.png)
-
-With TailAdmin Next.js, you get access to all the necessary dashboard UI components, elements, and pages required to build a high-quality and complete dashboard or admin panel. Whether you're building a dashboard or admin panel for a complex web application or a simple website. 
-
-TailAdmin utilizes the powerful features of **Next.js 15** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
 
 ## set env
 ``` bash
-NEXT_API_KEY=AIzaSyB8B-x2eB3-nkDsbIHj1I52WafhFR6BW10
-NEXT_AUTH_DOMAIN=issmartlocker.firebaseapp.com
-NEXT_PROJECT_ID=issmartlocker
-NEXT_STORAGE_BUCKET=issmartlocker.firebasestorage.app
-NEXT_MESSAGING_SENDER_ID=291828843752
-NEXT_APP_ID=1:291828843752:web:946d1adb149a85e609755d
+# yang terbaru
+# .env.local
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB8B-x2eB3-nkDsbIHj1I52WafhFR6BW10
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=issmartlocker.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=issmartlocker
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=issmartlocker.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=291828843752
+NEXT_PUBLIC_FIREBASE_APP_ID=1:291828843752:web:946d1adb149a85e609755d
+
 
 # firebase admin
 FIREBASE_PROJECT_ID=issmartlocker
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@issmartlocker.iam.gserviceaccount.com
-FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCx+c+IeAk/jgSl\nI4ksfwXkvJaSmMMTiI6a9Dj/hx8/f7Jr06IyDzVhQFuS1dmlMCmrK+GnQ+onAbMw\nTsIe5xhRJQlipzDL6CDs4QPNAEhVPTmkI7X62bTRo5NtDE8LII/DwmJoKFzjxHk9\nZ9oof3fdMzGMqLOROwbqXfNazc0ok8qpP3r1y9qiGYFfpFgFQ01wwdvSbtWxsMOv\nhiWSq6ht/+hRzbJKJqHxBtgJcl3BZy49GR6VM+xzYZk4J1AMI30Sno2pif6XOXQe\njVB+XxzTc2swqUFSRQKegSQR5FAeoB0HrhxIcwDU6CWzO81UxdxmN1f2wKBG/wN/\naTCDfZ4TAgMBAAECggEAAaF42dbDuu3ZtAupz5sQWkKyHIDC1NR8/gV72jeKPUI1\nx9AmHdBO3GfDDwrflihlUVizFh3EsPvOgQRPugnDCsdMmTdP9qZXWuRK7R9yCjnn\n482h9rz077DQgoDI3qC7QH9w+GRaSYn81Ge1s4ZLel7kNtY64vtH+nDG8I+PMC56\nlGNLvNE8Di3bIBed9BabLuXcOmVrgVUqKPOYK1qTt9h7uQHWEwFgc4N6wat/IOmh\nonNPHv6UppOQ/piCHEGW/8npdlmdnpj/59zWEaQj0rayvFztm3jmwBCXmMQVIduE\nFEVJd1m1HsIdUvSSvoHoX2JQ+Ps4ao7jYB4pVnMdtQKBgQDdIYnEkJzb/YHRys/k\nc26bC+MdodxFAmRpc8/5ySLB71osw8yh/HtMAAfoEjzcOz0HS5uAnZTuC61NUq+O\n8+pGD68MVy9NilR7Oyx3uVmh3umj+np5XRZsFuWz4MxSOkuFLFoi6rWJCJZYEBMm\nIy0HU9qQm1J83j/ZpkQjz7ZXTQKBgQDOCjbU1AlSBgrfkEATWVG0GPfXcilO7NPs\nMgLbBfdIyt8K2kntoGUDSKHi5kMFSwJ8K7TLPXM8Jz0cuEcRIOClelc0eVQYxChT\n9uKwEQdp9xZE8orgg1pnOTupl1T/aNmhHQl7VSPLlTmufJ8VJc8GZkPmkGx6C3fI\n3Bz3+pDa3wKBgFzuOU2oUKOLOEGIcDHb6QGzzzCm00EVLkm66A5bXwYNpuHlL1xs\nFQztfmUjNPyA0Lb+KU21697WfXBfbXQwQaZL9Q7EnRaDKdnYFmoCNQ739Ux6eXoD\niubGAKbFtFhiM1a2OvMtnDkIqNY9ey6t3cCUlufqvpHHfSHk5AIAyuqJAoGACGW0\nLGJj6triMJBhfChkwxFNcJNviY7vaC31ndWVaXsTMg8JekzSMRsRtfyqeJnBBSyG\n1s2vV6FFxVjhVJphbX0Z9sKHIedEuX9TZ9eZ1MDEQJUeAd54ncJgYx4O0cYFMKLN\nUyB6L/7p9emQVj1PPbSHSetS8HptLFuENrsYkkMCgYBkpwbpEu81e5HBHCF4IRNY\n/c5w7x5H9b/pfbeNWoVd5ktuNFBKfZfDOX9DZRfTwe/YLhrFJuE+9dcr7VVziatQ\ns2YsSWSSUUEMJFYyadPWnNOtXGKCnNVY5+YrU7cjjKaVGe96aoM/bRRisPoBHc6l\n628ULjpxiCnR9cKEpt17Aw==\n-----END PRIVATE KEY-----\n
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDHJy4VWikyqdbV\nDyuubca/LhpkgwenLlU3P8hkeK3N7sNnaok6k6UfapTcawncCuOYg6J57+jewxBy\noDOASbFylSjp0+9uTxEdCg6LgOszJmxwy9qOKncZfT84ump5v2/nkGUSR9KNfsVD\nlpHzxCl/S8ZIN3gc+PM1eFKogdiE9Ts6NXjg9QerQYm0TrlwKhHfMtjb06Ew4KjY\nOs17RxGa5+jKStScmT/ff+JZX7ifQAeIMPb7L7d05Z+b1BFY6JT72QoQkAWFVa1M\npn+BGsVIYNpIIWix45EacyK98Yy2YrUIevTK8h93MVTZQJ1e4tvzwHt8G9jOscl7\nfxC7WDSpAgMBAAECggEABWPzOH77nzxPXS43UJX2U5GmA3sz83OauR979zM4ghrQ\ntW2B6CDbru9httsbVdZCHYxPkyUaHKBzQyUAq9vixo8Qv859nDLd69csOFytkRF8\nzStJX8B4v4r/MXQDQoca2m3TPITO50dLg9YxHmPcey50ABunP8KBw7xdYWP9VjDo\nUJ+QsC0L8bALRbuWzeMPTT1mZ74St885RGXP2rRp+cDdtfZJmnfbOSjvp4H3yX+I\nk3cqz6ScAgbPLfWHsAMUDE3U1DO+r9HAMNxHSv8Lt3sis5nYCH0Dd3HQUPIPXYrW\nkgryF5IekAMQAc7T2Qycwne6rVrNvs/6326qxrRCYQKBgQDxhDcbYEkyRdyF0+D1\n3ytevLAB9Ss/cUVMU/UPk7usztgIhrVjlxD79AXNIs7sxljyTHmbJcTs0Am84U64\nJ+iJmtTn42kKZrxgFL78UxFv8PJ2DR/dAS5McP5s+ijbsNtdTOLjzGaqU4MWWaNP\nYY+FTxFyk4+/VSpW89Pzu550CQKBgQDTGJjrcIKKqQbaq5xa2ZZ+anpgQIQgwCyt\naCMkPaB5WyzMdpmZZLcM6ixOC8askk2zFHaJ4Ux2mIvVDUrcYyqAQamlTSlzSkOA\n+do/zGASt6hhaxM0gtOeCUKFtLiATMYWEVoZU4RQDI3Jw89cL7vjMkKYi66hgzzq\nxs0fuTQjoQKBgQDKv4ynfcBU5NMIweMjZTL6d/pl2lRxEPz047JhXkr5+jbfiX6y\n2TnX2XYZTLRbjvNSjSK1PRLBHrBeEOLNtCsBgapj9MPUiIRxQFlIZ8/GooZY1hG+\nrWQZpe3gvG0aaLDu9UGvrIMvT6ZHV/7CAAvFBKiIABp3q948Wrq+7O1LSQKBgQCi\n+v+972zqb5waIpsiTZJy4fS/8a/RtW4JKDjRlz8Z0zogVoU6uFbYAsjYLSFkRcT1\nuZvX0nn9qsNzZ8LfqzS6N3gqZwvUtoatwrotvbaDXQcEx+3ZAhUulAmnP6OfcycR\nDK6alS+3uimSmLq1eyk+PaTLMDVRAAl9XqYqkwxdYQKBgQCLer4UzyV/0wHpcjUA\nU38jfAAFuzzJqN7Dnl1KSU6M0fqCRfz7Kx+xYtJqcgQoHOBFIduIjYeevDx5fTv9\nOfJNsTtnu+VIAesVQBl/+xjrZxGJpyUCcobrf78VsSbY6O9F8WjG4LjM/7MGpBbU\nk87ov+hjHxCpzi+rFwiNSi00qA==\n-----END PRIVATE KEY-----\n
+
 ```
 
 ## Overview

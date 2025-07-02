@@ -58,6 +58,17 @@ const navItems: NavItem[] = [
       { name: "Scheduled", path: "/bookings/scheduled" },
     ],
   },
+
+  {
+    icon: <PlugInIcon />,
+    name: "Plugins",
+    subItems: [
+      { name: "Plugin Store", path: "/modals" },
+    
+    ],
+  },
+
+  
 ];
 
 const othersItems: NavItem[] = [

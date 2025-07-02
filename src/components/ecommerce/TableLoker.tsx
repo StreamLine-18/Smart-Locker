@@ -1,3 +1,4 @@
+"use client";
 import {
   Table,
   TableBody,
@@ -57,7 +58,8 @@ export default function TableLoker() {
       const res = await fetch("/api/admin/lockers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
+        body: JSON.stringify({ ...form, price: Number(form.price) })
+
       });
       if (res.ok) {
         const newLocker = await res.json();
@@ -97,7 +99,8 @@ export default function TableLoker() {
       const res = await fetch(`/api/admin/lockers?id=${editId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm)
+        body: JSON.stringify({ ...editForm, price: Number(editForm.price) })
+
       });
       if (res.ok) {
         const updatedLocker = await res.json();
@@ -301,49 +304,225 @@ export default function TableLoker() {
       )}
 
       {/* Pop up tambah locker */}
-      {showAdd && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handleAddLocker} className="bg-white rounded-lg p-6 shadow-lg w-96">
-            <p className="mb-4 text-center text-lg font-semibold">Tambah Locker</p>
-            <div className="mb-2">
-              <label className="block mb-1">Locker Number</label>
-              <input className="w-full border rounded px-2 py-1" required value={form.lockerNumber} onChange={e => setForm(f => ({...f, lockerNumber: e.target.value}))} />
+{showAdd && (
+  <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <form onSubmit={handleAddLocker} className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 rounded-t-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-white bg-opacity-20 rounded-lg p-2">
+              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-1-1.732l-5-3a2 2 0 00-2 0l-5 3A2 2 0 004 13v6a2 2 0 002 2z" />
+              </svg>
             </div>
-            <div className="mb-2">
-              <label className="block mb-1">Location</label>
-              <input className="w-full border rounded px-2 py-1" required value={form.locationId} onChange={e => setForm(f => ({...f, locationId: e.target.value}))} />
-            </div>
-            <div className="mb-2">
-              <label className="block mb-1">Lock Status</label>
-              <input className="w-full border rounded px-2 py-1" required value={form.lockStatus} onChange={e => setForm(f => ({...f, lockStatus: e.target.value}))} />
-            </div>
-            <div className="mb-2">
-              <label className="block mb-1">Door Status</label>
-              <input className="w-full border rounded px-2 py-1" required value={form.doorStatus} onChange={e => setForm(f => ({...f, doorStatus: e.target.value}))} />
-            </div>
-            <div className="mb-2">
-              <label className="block mb-1">Booking Status</label>
-              <input className="w-full border rounded px-2 py-1" required value={form.bookingStatus} onChange={e => setForm(f => ({...f, bookingStatus: e.target.value}))} />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1">Price</label>
-              <input className="w-full border rounded px-2 py-1" required value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} />
-            </div>
-            <div className="flex justify-center gap-4">
-              <button type="submit" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded" disabled={isAdding}>
-                Simpan
-              </button>
-              <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded" onClick={() => setShowAdd(false)} disabled={isAdding}>
-                Batal
-              </button>
-            </div>
-          </form>
+            <h2 className="text-xl font-bold text-white">Tambah Locker Baru</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAdd(false)}
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-2 transition-all duration-200"
+            disabled={isAdding}
+          >
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      )}
+      </div>
+
+      {/* Form Content */}
+      <div className="p-6 space-y-4">
+        {/* Locker Number */}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Nomor Locker <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+            </svg>
+            <input 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+              placeholder="Contoh: L001, L002"
+              required 
+              value={form.lockerNumber} 
+              onChange={e => setForm(f => ({...f, lockerNumber: e.target.value}))} 
+            />
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Lokasi <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <input 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+              placeholder="Contoh: Lobby Utama, Lt. 2 Area A"
+              required 
+              value={form.locationId} 
+              onChange={e => setForm(f => ({...f, locationId: e.target.value}))} 
+            />
+          </div>
+        </div>
+
+        {/* Lock Status */}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Status Kunci <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-1-1.732l-5-3a2 2 0 00-2 0l-5 3A2 2 0 004 13v6a2 2 0 002 2z" />
+            </svg>
+            <select 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white appearance-none"
+              required 
+              value={form.lockStatus} 
+              onChange={e => setForm(f => ({...f, lockStatus: e.target.value}))}
+            >
+              <option value="">Pilih Status Kunci</option>
+              <option value="locked">🔒 Terkunci</option>
+              <option value="unlocked">🔓 Tidak Terkunci</option>
+              <option value="maintenance">🔧 Maintenance</option>
+              <option value="error">⚠️ Error</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Door Status */}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Status Pintu <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+            <select 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white appearance-none"
+              required 
+              value={form.doorStatus} 
+              onChange={e => setForm(f => ({...f, doorStatus: e.target.value}))}
+            >
+              <option value="">Pilih Status Pintu</option>
+              <option value="closed">🚪 Tertutup</option>
+              <option value="open">🔓 Terbuka</option>
+              <option value="jammed">🚫 Macet</option>
+              <option value="maintenance">🔧 Maintenance</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Booking Status */}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Status Booking <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <select 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white appearance-none"
+              required 
+              value={form.bookingStatus} 
+              onChange={e => setForm(f => ({...f, bookingStatus: e.target.value}))}
+            >
+              <option value="">Pilih Status Booking</option>
+              <option value="available">✅ Tersedia</option>
+              <option value="booked">📋 Terpesan</option>
+              <option value="occupied">🔴 Terisi</option>
+              <option value="reserved">⏳ Direservasi</option>
+              <option value="maintenance">🔧 Maintenance</option>
+              <option value="out-of-service">❌ Tidak Beroperasi</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Price */}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Harga Sewa <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold text-sm">
+              Rp
+            </div>
+            <input 
+              type="number"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+              placeholder="5000"
+              min="0"
+              step="1000"
+              required 
+              value={form.price} 
+              onChange={e => setForm(f => ({...f, price: e.target.value}))} 
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+              /jam
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            {form.price && !isNaN(Number(form.price)) && Number(form.price) > 0 
+              ? `Rp ${parseInt(form.price).toLocaleString('id-ID')} per jam` 
+              : 'Masukkan harga dalam Rupiah'}
+          </p>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3">
+        <button 
+          type="button" 
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all duration-200 disabled:opacity-50" 
+          onClick={() => setShowAdd(false)} 
+          disabled={isAdding}
+        >
+          Batal
+        </button>
+        <button 
+          type="submit" 
+          className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
+          disabled={isAdding}
+        >
+          {isAdding ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Simpan Locker
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  </div>
+)}
 
       {/* Pop up edit locker */}
       {editId && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <div className="fixed inset-0 flex items-center justify-center ">
           <form onSubmit={handleEditLocker} className="bg-white rounded-lg p-6 shadow-lg w-96">
             <p className="mb-4 text-center text-lg font-semibold">Edit Locker</p>
             <div className="mb-2">
