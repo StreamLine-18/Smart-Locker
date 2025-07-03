@@ -7,7 +7,7 @@ export const Monitoring = () => {
   const [totalUser, setTotalUser] = useState<number | null>(null);
   const [totalOrder, setTotalOrder] = useState<number | null>(null);
   const [totalAmount, setTotalAmount] = useState<number | null>(null);
-  const [invoices, setInvoices] = useState<any[]>([]); // state untuk data invoice
+  const [totalTransaksi, setTotalTransaksi] = useState<number | null>(null); // state untuk total transaksi
 
   useEffect(() => {
     async function fetchTotalUser() {
@@ -26,9 +26,9 @@ export const Monitoring = () => {
       setTotalAmount(data.totalAmount);
     }
     async function fetchInvoices() {
-      const res = await fetch("/api/admin/totalTransaksiberhasil");
+      const res = await fetch("/api/admin/totalTransaksi");
       const data = await res.json();
-      setInvoices(data.invoices || []);
+      setTotalTransaksi(data.totalTransaksi ?? null);
     }
 
     fetchTotalAmount();
@@ -37,32 +37,32 @@ export const Monitoring = () => {
     fetchTotalUser();
   }, []);
 
-const StatCard = ({
-  icon,
-  label,
-  value,
-  badge,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-  badge?: React.ReactNode;
-}) => (
-  <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-    <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-800">
-      {icon}
-    </div>
-    <div className="mt-auto flex items-end justify-between pt-5">
-      <div>
-        <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
-        <h4 className="text-title-sm mt-2 font-bold text-gray-800 dark:text-white/90">
-          {value}
-        </h4>
+  const StatCard = ({
+    icon,
+    label,
+    value,
+    badge,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    value: React.ReactNode;
+    badge?: React.ReactNode;
+  }) => (
+    <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+      <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-800">
+        {icon}
       </div>
-      {badge}
+      <div className="mt-auto flex items-end justify-between pt-5">
+        <div>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+          <h4 className="text-title-sm mt-2 font-bold text-gray-800 dark:text-white/90">
+            {value}
+          </h4>
+        </div>
+        {badge}
+      </div>
     </div>
-  </div>
-);
+  );
 
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 md:gap-6">
@@ -89,7 +89,7 @@ const StatCard = ({
       <StatCard
         icon={<GroupIcon className="size-6 text-gray-800 dark:text-white/90" />}
         label="Transaksi Terbayar"
-        value={invoices.length > 0 ? invoices.length : "Loading..."}
+        value={totalTransaksi !== null ? totalTransaksi : "Loading..."}
         badge={
           <Badge color="success">
             <ArrowUpIcon />

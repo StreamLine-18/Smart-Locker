@@ -9,7 +9,8 @@ import {
 import Badge from "../ui/badge/Badge";
 import Image from "next/image";
 import { useLockers } from "./hooks/lockerCard.hooks";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { fetchLockerDurations } from "@/lib/fetchLockerDurations";
 
 export default function TableLoker() {
   const { lockers, loading, setLockers } = useLockers();
@@ -37,6 +38,11 @@ export default function TableLoker() {
   const [isEditing, setIsEditing] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);
+  const [lockerDurations, setLockerDurations] = useState<{ [lockerId: string]: string }>({});
+
+  useEffect(() => {
+    fetchLockerDurations().then(setLockerDurations);
+  }, []);
 
   const handleDelete = async (id: string) => {
     setIsDeleting(true);
@@ -196,6 +202,12 @@ export default function TableLoker() {
               >
                 Booking Status
               </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Durasi
+              </TableCell>
             </TableRow>
           </TableHeader>
 
@@ -255,6 +267,10 @@ export default function TableLoker() {
                   </TableCell>
                   <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {locker.bookingStatus}
+                  </TableCell>
+                  <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    {/* Ambil durasi dari Realtime Database jika ada, fallback ke "-" */}
+                    {lockerDurations[locker.id] || "-"}
                   </TableCell>
                   <TableCell className="py-3 text-right">
                     <button

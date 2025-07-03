@@ -28,59 +28,37 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/",
   },
-  {
-    icon: <UserCircleIcon />,
-    name: "admin-Profile",
-    path: "/profile",
-  },
+  // {
+  //   icon: <UserCircleIcon />,
+  //   name: "admin-Profile",
+  //   path: "/profile",
+  // },
   {
     icon: <UserIcon />,
     name: "User Management",
-    subItems: [
-      { name: "All Users", path: "/users" },
-      { name: "Activity Logs", path: "/users/activity-logs" },
-    ],
-  },
-  {
-    icon: <LockIcon />,
-    name: "Locker Management",
-    subItems: [
-      { name: "All Lockers", path: "/lockers" },
-      { name: "Maintenance", path: "/locker-maintenance" },
-    ],
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Booking System",
-    subItems: [
-      { name: "New Booking", path: "/bookings/new" },
-      { name: "Booking History", path: "/bookings" },
-      { name: "Scheduled", path: "/bookings/scheduled" },
-    ],
-  },
-
-  {
-    icon: <PlugInIcon />,
-    name: "Plugins",
-    subItems: [
-      { name: "Plugin Store", path: "/modals" },
-    
-    ],
+    path: "/all-user",
   },
 
   
-];
-
-const othersItems: NavItem[] = [
+    
+  
   {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
+    icon: <LockIcon />,
+    name: "Locker Management",
+    path: "/lockers", // ⬅️ ubah dari subItems ke path langsung
   },
 ];
+
+// const othersItems: NavItem[] = [
+//   {
+//     icon: <PlugInIcon />,
+//     name: "Authentication",
+//     subItems: [
+//       { name: "Sign In", path: "/signin", pro: false },
+//       { name: "Sign Up", path: "/signup", pro: false },
+//     ],
+//   },
+// ];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -110,13 +88,14 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+    // Hanya cek menuType "main" karena "others" sudah di-comment
+    ["main"].forEach((menuType) => {
+      const items = navItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
-              setOpenSubmenu({ type: menuType as "main" | "others", index });
+              setOpenSubmenu({ type: menuType as "main", index });
               submenuMatched = true;
             }
           });
@@ -272,12 +251,12 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            <div>
+            {/* <div>
               <h2 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"}`}>
                 {isExpanded || isHovered || isMobileOpen ? "Others" : <HorizontaLDots />}
               </h2>
               {renderMenuItems(othersItems, "others")}
-            </div>
+            </div> */}
           </div>
         </nav>
       </div>
@@ -286,3 +265,5 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
+
+
