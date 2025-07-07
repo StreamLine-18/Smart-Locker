@@ -37,6 +37,11 @@ const navItems: NavItem[] = [
     icon: <UserIcon />,
     name: "User Management",
     path: "/all-user",
+    subItems: [
+      { name: "All user", path: "/all-user" },
+      { name: "Add User", path: "/add-user" },
+      { name: "User Logs", path: "/user-logs" },
+    ],
   },
 
   

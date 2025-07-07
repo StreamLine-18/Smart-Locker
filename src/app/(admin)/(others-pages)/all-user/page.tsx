@@ -1,58 +1,31 @@
-'use client';
+//todo: Add UserTable component import
+import { UserTable } from "@/components/user-management/UserTable";
+import { Metadata } from "next";
+import React from "react";
 
-import React from 'react';
-import {UserTable} from '@/components/user-management/UserTable';
-import {Pagination} from '@/components/ui/pagination';
-import SearchInput from '@/components/ui/search-input';
-import Button from '@/components/ui/button/Button';
-import { PlusIcon } from '@/icons';
- // pastikan file ini ada
+export const metadata: Metadata = {
+  title: "All Users | Smart Locker Admin Dashboard",
+  description: "View and manage all users in the Smart Locker system",
+};
 
-export default function AllUsersPage() {
-  // Dummy data - nanti bisa diganti dengan API
-  const users = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Inactive' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Inactive' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Active' },
-    // Tambahkan data sesuai kebutuhan
-  ];
-
+export default function AllUsers() {
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
-        <Button variant="primary">
-          <PlusIcon className="w-4 h-4 mr-2" />
-          Add User
-        </Button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex justify-between items-center mb-4">
-          <SearchInput/>
-          <div className="flex space-x-2">
-            <Button variant="outline">Filter</Button>
-            <Button variant="outline">Export</Button>
-          </div>
-        </div>
-
-        <UserTable users={users} />
-
-        <div className="mt-4 flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            Showing 1 to 10 of 50 entries
-          </div>
-          <Pagination
-            currentPage={1}
-            totalPages={5}
-            onPageChange={(page) => console.log('Change page to:', page)}
-          />
+    <div>
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+        <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
+          All Users
+        </h3>
+        <div className="space-y-6">
+          <p className="text-gray-600 dark:text-white/70">
+            This page displays all users registered in the Smart Locker system.
+            You can view user details, roles, and other relevant information.
+          </p>
+          {/* UserTable component would be placed here */}
+          <UserTable /> 
+                     
         </div>
       </div>
     </div>
   );
 }
 
-
-// 

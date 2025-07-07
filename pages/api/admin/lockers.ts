@@ -1,108 +1,156 @@
 // pages/api/admin/lockers.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getFirestore } from "firebase-admin/firestore";
-import admin from "@/lib/firebase_admin";
+import { db } from "@/lib/firebase";
+import { 
+  collection, getDocs, query, doc, getDoc, 
+  updateDoc, setDoc, deleteDoc, serverTimestamp, 
+  getFirestore 
+} from "firebase/firestore";
+import { initializeApp, getApps, getApp } from 'firebase/app';
 
-const db = getFirestore(admin.app());
+// Ensure Firebase is initialized properly
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+};
+
+// Initialize Firebase if needed
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// Create a direct Firestore instance to ensure it's properly initialized
+const firestore = getFirestore(app);
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Get the locker id from query params
+  const { id } = req.query;
+  
   try {
     switch (req.method) {
       case "GET": {
-        const snapshot = await db.collection("lockers").get();
-        const lockers = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        return res.status(200).json(lockers);
+        // If ID is provided, get a specific locker
+        if (id && typeof id === 'string') {
+          const lockerRef = doc(firestore, "lockers", id);
+          const lockerDoc = await getDoc(lockerRef);
+          
+          if (!lockerDoc.exists()) {
+            return res.status(404).json({ error: `Locker with ID ${id} not found` });
+          }
+          
+          return res.status(200).json({ id: lockerDoc.id, ...lockerDoc.data() });
+        } 
+        // Otherwise return all lockers
+        else {
+          // Use the Firestore instance directly
+          const lockersCollection = collection(firestore, "lockers");
+          const lockersSnapshot = await getDocs(lockersCollection);
+          
+          // Convert the snapshot to an array of locker objects
+          const lockers = lockersSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          
+          return res.status(200).json(lockers);
+        }
       }
 
       case "POST": {
-        const { lockerNumber, locationId, lockStatus, doorStatus, bookingStatus, price } = req.body;
-
-        // Validasi semua field wajib
-        if (
-          !lockerNumber ||
-          !locationId ||
-          !lockStatus ||
-          !doorStatus ||
-          !bookingStatus ||
-          typeof price !== "number"
-        ) {
-          return res.status(400).json({ error: "Missing or invalid required fields" });
+        const data = req.body;
+        
+        // Validate required fields
+        const requiredFields = ['lockerId', 'lockerNumber', 'locationId', 'lockStatus', 'doorStatus', 'bookingStatus', 'contentStatus', 'pricePerHour'];
+        const missingFields = requiredFields.filter(field => !data[field] && data[field] !== 0);
+        
+        if (missingFields.length > 0) {
+          return res.status(400).json({ 
+            error: `Missing required fields: ${missingFields.join(', ')}`,
+            receivedData: data
+          });
         }
-
-        const docRef = await db.collection("lockers").add({
-          lockerNumber,
-          locationId,
-          lockStatus,
-          doorStatus,
-          bookingStatus,
-          price,
-        });
-
-        return res.status(201).json({
-          id: docRef.id,
-          lockerNumber,
-          locationId,
-          lockStatus,
-          doorStatus,
-          bookingStatus,
-          price,
-        });
+        
+        // Ensure pricePerHour is a number
+        if (typeof data.pricePerHour !== "number") {
+          data.pricePerHour = Number(data.pricePerHour);
+        }
+        
+        // Add timestamps
+        data.createdAt = serverTimestamp();
+        data.lastUpdated = serverTimestamp();
+        
+        try {
+          // Create document with custom ID
+          const lockerRef = doc(firestore, "lockers", data.lockerId);
+          await setDoc(lockerRef, data);
+          return res.status(201).json({
+            id: data.lockerId,
+            ...data
+          });
+        } catch (err: any) {
+          console.error("Error creating locker:", err);
+          return res.status(400).json({ error: err.message || "Failed to create locker" });
+        }
       }
 
       case "PUT": {
-        const { id } = req.query;
-        const { lockerNumber, locationId, lockStatus, doorStatus, bookingStatus, price } = req.body;
-
+        // Check if ID exists
         if (!id || typeof id !== "string") {
-          return res.status(400).json({ error: "Missing locker ID" });
+          return res.status(400).json({ error: "Locker ID is required and must be a string" });
         }
-
-        if (
-          !lockerNumber ||
-          !locationId ||
-          !lockStatus ||
-          !doorStatus ||
-          !bookingStatus ||
-          typeof price !== "number"
-        ) {
-          return res.status(400).json({ error: "Missing or invalid required fields" });
+        
+        // Validate request body
+        const data = req.body;
+        if (!data) {
+          return res.status(400).json({ error: "Request body is required" });
         }
-
-        await db.collection("lockers").doc(id).update({
-          lockerNumber,
-          locationId,
-          lockStatus,
-          doorStatus,
-          bookingStatus,
-          price,
-        });
-
-        return res.status(200).json({
-          id,
-          lockerNumber,
-          locationId,
-          lockStatus,
-          doorStatus,
-          bookingStatus,
-          price,
-          message: "Locker updated successfully",
-        });
+        
+        // Required fields validation
+        const requiredFields = ['lockerId', 'lockerNumber', 'locationId', 'lockStatus', 'doorStatus', 'bookingStatus', 'contentStatus', 'pricePerHour'];
+        const missingFields = requiredFields.filter(field => !data[field] && data[field] !== 0);
+        
+        if (missingFields.length > 0) {
+          return res.status(400).json({ 
+            error: `Missing required fields: ${missingFields.join(', ')}`,
+            receivedData: data
+          });
+        }
+        
+        // Get the locker reference
+        const lockerRef = doc(firestore, "lockers", id);
+        
+        // Check if locker exists
+        const lockerDoc = await getDoc(lockerRef);
+        if (!lockerDoc.exists()) {
+          return res.status(404).json({ error: `Locker with ID ${id} not found` });
+        }
+        
+        // Ensure pricePerHour is a number
+        if (typeof data.pricePerHour !== "number") {
+          data.pricePerHour = Number(data.pricePerHour);
+        }
+        
+        // Add lastUpdated timestamp
+        data.lastUpdated = serverTimestamp();
+        
+        // Update the document
+        await updateDoc(lockerRef, data);
+        
+        // Return the updated locker data
+        return res.status(200).json({ id, ...data });
       }
 
       case "DELETE": {
-        const { id } = req.query;
-
         if (!id || typeof id !== "string") {
           return res.status(400).json({ error: "Missing locker ID" });
         }
 
-        await db.collection("lockers").doc(id).delete();
+        const lockerRef = doc(firestore, "lockers", id);
+        await deleteDoc(lockerRef);
 
         return res.status(200).json({ success: true, message: "Locker deleted successfully" });
       }
@@ -111,7 +159,10 @@ export default async function handler(
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
   } catch (error: any) {
-    console.error("🔥 API /lockers error:", error.message);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error handling locker API request:", error);
+    return res.status(500).json({ 
+      error: "Internal server error", 
+      message: error.message 
+    });
   }
 }
