@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { LockerFormData } from './AddLockerModal';
 import Button from '../ui/button/Button';
 import Badge from '../ui/badge/Badge';
 import Alert from '../ui/alert/Alert';
+import { collection, getDocs, query, getFirestore } from 'firebase/firestore';
+import { db as importedDb } from '@/lib/firebase';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+
+// Ensure Firebase is initialized
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+};
+
+// Initialize Firebase if it hasn't been initialized yet
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const db = importedDb || getFirestore(app);
 
 interface EditLockerModalProps {
   isOpen: boolean;
@@ -23,7 +39,29 @@ interface EditLockerModalProps {
   };
 }
 
+interface LockerFormData {
+  lockerId: string;
+  lockerNumber: string;
+  locationId: string;
+  lockStatus: string;
+  doorStatus: string;
+  bookingStatus: string;
+  contentStatus: string;
+  pricePerHour: string;
+  currentOrderId: null;
+  lastUser: null;
+}
+
+interface Location {
+  id: string;
+  name: string;
+}
+
 export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, lockerData }: EditLockerModalProps) {
+  // Available options for dropdowns
+  const [availableLocations, setAvailableLocations] = useState<Location[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+
   const [form, setForm] = useState<LockerFormData>({
     lockerId: "",
     lockerNumber: "",
@@ -39,6 +77,32 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Fetch available locations
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const fetchLocations = async () => {
+      setLoadingOptions(true);
+      try {
+        // Fetch locations
+        const locationsCollection = collection(db, "locations");
+        const locationsSnapshot = await getDocs(locationsCollection);
+        const locationsData = locationsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name || doc.id,
+        }));
+        setAvailableLocations(locationsData);
+      } catch (err) {
+        console.error("Error fetching locations:", err);
+        // Don't set error state here, as it might interfere with the form
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    
+    fetchLocations();
+  }, [isOpen]);
 
   // Update form when locker data changes
   useEffect(() => {
@@ -68,12 +132,24 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
     setError(null);
     
     try {
+      // Validate form data before submitting
+      if (!form.lockerNumber || !form.locationId || !form.pricePerHour) {
+        throw new Error("Please fill in all required fields");
+      }
+      
+      // Ensure pricePerHour is a valid number
+      if (isNaN(Number(form.pricePerHour))) {
+        throw new Error("Price must be a valid number");
+      }
+      
       await onSubmit(lockerId, form);
+      
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
       }, 3000);
     } catch (err: any) {
+      console.error("Error in form submission:", err);
       setError(err.message || "Failed to update locker. Please try again.");
     } finally {
       setIsEditing(false);
@@ -151,7 +227,7 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
                   />
                 </div>
                 
-                {/* Location */}
+                {/* Location - Changed to dropdown */}
                 <div className="space-y-1">
                   <label className="block text-xs font-semibold text-gray-700">
                     Lokasi <span className="text-red-500">*</span>
@@ -161,13 +237,26 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <input 
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
-                      placeholder="Contoh: loc1, loc2"
-                      required 
-                      value={form.locationId} 
-                      onChange={e => setForm(f => ({...f, locationId: e.target.value}))} 
-                    />
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                      required
+                      value={form.locationId}
+                      onChange={e => setForm(f => ({...f, locationId: e.target.value}))}
+                    >
+                      {loadingOptions ? (
+                        <option value="">Loading locations...</option>
+                      ) : (
+                        <>
+                          <option value="">Select Location</option>
+                          {availableLocations.map(location => (
+                            <option key={location.id} value={location.id}>{location.name}</option>
+                          ))}
+                        </>
+                      )}
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
                 
@@ -304,7 +393,7 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
                     Harga Sewa Per Jam <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold text-xs">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold text-sm">
                       Rp
                     </div>
                     <input 
@@ -317,7 +406,7 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
                       value={form.pricePerHour} 
                       onChange={e => setForm(f => ({...f, pricePerHour: e.target.value}))} 
                     />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
                       /jam
                     </div>
                   </div>
@@ -327,18 +416,6 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
                         ? `Rp ${parseInt(form.pricePerHour).toLocaleString('id-ID')} per jam` 
                         : 'Masukkan harga dalam Rupiah'}
                     </p>
-                    
-                    {form.pricePerHour && !isNaN(Number(form.pricePerHour)) && Number(form.pricePerHour) > 0 && (
-                      <div className="ml-2">
-                        <Badge 
-                          variant="light" 
-                          color="success" 
-                          size="sm"
-                        >
-                          Valid
-                        </Badge>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -360,16 +437,14 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
               <div className="mt-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   <div>
-                    <p className="text-xs text-gray-500">ID:</p>
-                    <p className="text-xs font-medium">{form.lockerId || "Belum diisi"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Nomor:</p>
-                    <p className="text-xs font-medium">{form.lockerNumber || "Belum diisi"}</p>
-                  </div>
-                  <div>
                     <p className="text-xs text-gray-500">Lokasi:</p>
-                    <p className="text-xs font-medium">{form.locationId || "Belum diisi"}</p>
+                    <p className="text-xs font-medium">
+                      {form.locationId ? availableLocations.find(l => l.id === form.locationId)?.name || form.locationId : "Belum dipilih"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Nomor Locker:</p>
+                    <p className="text-xs font-medium">{form.lockerNumber || "Belum diisi"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Status Kunci:</p>
@@ -382,24 +457,6 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
                        form.lockStatus === "unlocked" ? "Tidak Terkunci" : 
                        form.lockStatus === "maintenance" ? "Maintenance" : "Error"}
                     </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Status Pintu:</p>
-                    <Badge 
-                      variant="light" 
-                      color={form.doorStatus === "closed" ? "success" : form.doorStatus === "open" ? "warning" : "error"} 
-                      size="sm"
-                    >
-                      {form.doorStatus === "closed" ? "Tertutup" : 
-                       form.doorStatus === "open" ? "Terbuka" : 
-                       form.doorStatus === "jammed" ? "Macet" : "Maintenance"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Harga/Jam:</p>
-                    <p className="text-xs font-medium">
-                      {form.pricePerHour ? `Rp ${parseInt(form.pricePerHour).toLocaleString('id-ID')}` : "Belum diisi"}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -422,11 +479,7 @@ export default function EditLockerModal({ isOpen, onClose, onSubmit, lockerId, l
             
             <Button 
               variant="primary"
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                if (!isEditing) {
-                  handleSubmit(e as unknown as React.FormEvent);
-                }
-              }}
+              type="submit" 
               disabled={isEditing}
               className="px-4 py-1.5 text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600" 
             >

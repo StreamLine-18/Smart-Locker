@@ -145,7 +145,7 @@ export default function TableLoker() {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 shadow-xl hover:shadow-2xl transition-all duration-300">
       <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Locker List
@@ -153,14 +153,14 @@ export default function TableLoker() {
         <div className="flex items-center gap-2 ml-auto">
           <div className="relative">
             <button
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded flex items-center"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded flex items-center shadow-sm hover:shadow-md transition-all duration-200"
               onClick={() => setFilterOpen((v) => !v)}
               title="Filter Locker"
             >
               <span className="mr-1">🔍</span> Filter
             </button>
             {filterOpen && (
-              <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
+              <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10">
                 <button
                   className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${filter === "A" ? "bg-gray-100 font-bold" : ""}`}
                   onClick={() => { setFilter("A"); setFilterOpen(false); }}
@@ -183,7 +183,7 @@ export default function TableLoker() {
             )}
           </div>
           <button
-            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
             onClick={() => setShowAddModal(true)}
           >
             Tambah Locker

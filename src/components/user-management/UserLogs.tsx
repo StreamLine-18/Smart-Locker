@@ -249,7 +249,7 @@ export default function UserLogs() {
   return (
     <div className="space-y-6">
       {/* Filters - Enhanced with better UI */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 transition-all duration-300 hover:shadow-md">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl hover:shadow-2xl transition-all duration-300 p-5 transform hover:-translate-y-1">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
             <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-2">
@@ -372,7 +372,7 @@ export default function UserLogs() {
       </div>
       
       {/* Logs Table - Enhanced with better UI */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
         {loading && !logs.length ? (
           <div className="p-16 text-center">
             <div className="inline-block p-3 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
@@ -511,7 +511,7 @@ export default function UserLogs() {
       </div>
       
       {/* Mobile Responsive Info */}
-      <div className="md:hidden text-xs text-center text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+      <div className="md:hidden text-xs text-center text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 shadow-md">
         Swipe right/left to see all columns in the table
       </div>
     </div>

@@ -1,7 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../ui/button/Button';
 import Badge from '../ui/badge/Badge';
 import Alert from '../ui/alert/Alert';
+import { collection, getDocs, query, getFirestore } from 'firebase/firestore';
+import { db as importedDb } from '@/lib/firebase';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+
+// Ensure Firebase is initialized
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+};
+
+// Initialize Firebase if it hasn't been initialized yet
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const db = importedDb || getFirestore(app);
 
 interface AddLockerModalProps {
   isOpen: boolean;
@@ -22,7 +39,17 @@ export interface LockerFormData {
   lastUser: null;
 }
 
+interface Location {
+  id: string;
+  name: string;
+}
+
 export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerModalProps) {
+  // Available options for dropdowns
+  const [availableLocations, setAvailableLocations] = useState<Location[]>([]);
+  const [availableLockerIds, setAvailableLockerIds] = useState<string[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  
   const [form, setForm] = useState<LockerFormData>({
     lockerId: "",
     lockerNumber: "",
@@ -38,6 +65,41 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Fetch available locations and locker IDs
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const fetchOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        // Fetch locations
+        const locationsCollection = collection(db, "locations");
+        const locationsSnapshot = await getDocs(locationsCollection);
+        const locationsData = locationsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name || doc.id,
+        }));
+        setAvailableLocations(locationsData);
+        
+        // Generate locker IDs (this could come from your database if you have a predefined list)
+        // For now, I'll generate IDs like locker_a1, locker_a2, etc.
+        const letters = ['a', 'b', 'c'];
+        const numbers = [1, 2, 3, 4, 5];
+        const ids = letters.flatMap(letter => 
+          numbers.map(number => `locker_${letter}${number}`)
+        );
+        setAvailableLockerIds(ids);
+      } catch (err) {
+        console.error("Error fetching options:", err);
+        setError("Failed to load dropdown options. Please try again.");
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    
+    fetchOptions();
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +198,7 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
 
               {/* First Column */}
               <div className="space-y-3"> {/* Reduced spacing */}
-                {/* Locker ID */}
+                {/* Locker ID - Changed to dropdown */}
                 <div className="space-y-1">
                   <label className="block text-xs font-semibold text-gray-700"> {/* Reduced text size */}
                     ID Locker <span className="text-red-500">*</span>
@@ -145,18 +207,29 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
                     <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> {/* Reduced icon size */}
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                     </svg>
-                    <input 
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
-                      placeholder="Contoh: locker_a1, locker_b2"
-                      required 
-                      value={form.lockerId} 
-                      onChange={e => setForm(f => ({...f, lockerId: e.target.value}))} 
-                    />
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      required
+                      value={form.lockerId}
+                      onChange={e => setForm(f => ({...f, lockerId: e.target.value}))}
+                    >
+                      <option value="">Select Locker ID</option>
+                      {loadingOptions ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        availableLockerIds.map(id => (
+                          <option key={id} value={id}>{id}</option>
+                        ))
+                      )}
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                   <p className="text-xs text-gray-500">Gunakan format: locker_[kode]</p>
                 </div>
 
-                {/* Location */}
+                {/* Location - Changed to dropdown */}
                 <div className="space-y-1">
                   <label className="block text-xs font-semibold text-gray-700">
                     Lokasi <span className="text-red-500">*</span>
@@ -166,13 +239,24 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <input 
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
-                      placeholder="Contoh: loc1, loc2"
-                      required 
-                      value={form.locationId} 
-                      onChange={e => setForm(f => ({...f, locationId: e.target.value}))} 
-                    />
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      required
+                      value={form.locationId}
+                      onChange={e => setForm(f => ({...f, locationId: e.target.value}))}
+                    >
+                      <option value="">Select Location</option>
+                      {loadingOptions ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        availableLocations.map(location => (
+                          <option key={location.id} value={location.id}>{location.name}</option>
+                        ))
+                      )}
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
 

@@ -20,6 +20,9 @@ interface BadgeProps {
   startIcon?: React.ReactNode; // Icon at the start
   endIcon?: React.ReactNode; // Icon at the end
   children: React.ReactNode; // Badge content
+  elevated?: boolean; // Whether to add shadow for floating effect
+  className?: string; // Additional classes
+  onClick?: () => void; // Optional click handler for interactive badges
 }
 
 const Badge: React.FC<BadgeProps> = ({
@@ -29,6 +32,9 @@ const Badge: React.FC<BadgeProps> = ({
   startIcon,
   endIcon,
   children,
+  elevated = false,
+  className = "",
+  onClick,
 }) => {
   const baseStyles =
     "inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium";
@@ -68,9 +74,16 @@ const Badge: React.FC<BadgeProps> = ({
   // Get styles based on size and color variant
   const sizeClass = sizeStyles[size];
   const colorStyles = variants[variant][color];
+  const shadowClass = elevated ? "shadow-md hover:shadow-lg transition-shadow duration-300" : "";
+  const cursorClass = onClick ? "cursor-pointer hover:opacity-90 transition-opacity" : "";
 
   return (
-    <span className={`${baseStyles} ${sizeClass} ${colorStyles}`}>
+    <span 
+      className={`${baseStyles} ${sizeClass} ${colorStyles} ${shadowClass} ${cursorClass} ${className}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       {startIcon && <span className="mr-1">{startIcon}</span>}
       {children}
       {endIcon && <span className="ml-1">{endIcon}</span>}
