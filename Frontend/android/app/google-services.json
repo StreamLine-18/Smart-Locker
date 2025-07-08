@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "291828843752",
+    "firebase_url": "https://issmartlocker-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "issmartlocker",
+    "storage_bucket": "issmartlocker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:291828843752:android:39fec1a61151c67309755d",
+        "android_client_info": {
+          "package_name": "com.example.smartlocker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "291828843752-duidhuhvfnir1vt643bpuaelvphgp41s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPMb1k9nsf18aHU7JN4L_quEJsirsXm7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "291828843752-duidhuhvfnir1vt643bpuaelvphgp41s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "291828843752-nn30ctr2pneeqhitqt1cdtpu3ubml7kt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.smartlocker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
