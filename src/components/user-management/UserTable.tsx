@@ -143,11 +143,11 @@ export function UserTable() {
     window.location.reload();
   };
   
-  // Profile avatar rendering with fallback
+  // Profile avatar rendering with fallback - simplified
   const renderUserAvatar = (user: User) => {
     if (user.photoURL) {
       return (
-        <div className="ring-2 ring-white dark:ring-gray-800 shadow-sm">
+        <div className="ring-1 ring-white/70 dark:ring-gray-800/70 shadow-sm">
           <Avatar 
             src={user.photoURL} 
             size="small"
@@ -155,10 +155,10 @@ export function UserTable() {
         </div>
       );
     } else {
-      // Attractive fallback icon when no photo is available
+      // Simpler fallback icon
       return (
-        <div className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 text-blue-600 dark:text-blue-300 shadow-sm ring-2 ring-white dark:ring-gray-800">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 shadow-sm ring-1 ring-white/70 dark:ring-gray-800/70">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
@@ -257,7 +257,7 @@ export function UserTable() {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
+      {/* Filters - keeping existing code */}
       <div className="p-5 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
@@ -405,20 +405,20 @@ export function UserTable() {
         </div>
       </div>
       
-      {/* User Table */}
+      {/* User Table - optimized layout */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
         <div className="overflow-x-auto">
           <Table className="w-full">
             <thead>
-              <tr className="text-sm bg-gray-50 dark:bg-gray-750">
-                <th className="w-1/6">
+              <tr className="text-xs bg-gray-50 dark:bg-gray-750">
+                <th className="w-[25%] px-4 py-3">
                   <button 
                     className="flex items-center font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
                     onClick={() => toggleSort('name')}
                   >
                     User
                     {sortBy === 'name' && (
-                      <span className="ml-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full p-0.5">
+                      <span className="ml-1 text-blue-600 dark:text-blue-400">
                         {sortOrder === 'asc' ? (
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -432,14 +432,14 @@ export function UserTable() {
                     )}
                   </button>
                 </th>
-                <th className="w-1/5">
+                <th className="w-[25%] px-4 py-3">
                   <button 
                     className="flex items-center font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
                     onClick={() => toggleSort('email')}
                   >
                     Email
                     {sortBy === 'email' && (
-                      <span className="ml-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full p-0.5">
+                      <span className="ml-1 text-blue-600 dark:text-blue-400">
                         {sortOrder === 'asc' ? (
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -453,16 +453,18 @@ export function UserTable() {
                     )}
                   </button>
                 </th>
-                <th className="w-1/6 font-medium">Role</th>
-                <th className="w-1/6 font-medium">Status</th>
-                <th className="w-1/6">
+                <th className="py-5 px-5 flex items-center font-medium">Role</th>
+                <th className="w-[15%] px-4 py-5 font-medium">
+                  <div className=' px-2.5 flex items-center'>Status</div>
+                </th>
+                <th className="w-[10%] px-4 py-5">
                   <button 
                     className="flex items-center font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
                     onClick={() => toggleSort('created')}
                   >
                     Created
                     {sortBy === 'created' && (
-                      <span className="ml-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full p-0.5">
+                      <span className="ml-1 text-blue-600 dark:text-blue-400">
                         {sortOrder === 'asc' ? (
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -476,152 +478,109 @@ export function UserTable() {
                     )}
                   </button>
                 </th>
-                <th className="w-1/6 font-medium text-center">Actions</th>
+                <th className="w-[10%] px-4 py-3 font-medium text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <td colSpan={6} className="text-center py-8">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                       </div>
-                      <p className="text-gray-500 dark:text-gray-400 font-medium">No users found matching your criteria</p>
+                      <p className="text-gray-500 dark:text-gray-400">No users found matching your criteria</p>
                       <button 
                         onClick={() => {
                           setRoleFilter('all');
                           setBookingFilter('all');
                           setSearchQuery('');
                         }}
-                        className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+                        className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                       >
-                        Clear all filters
+                        Clear filters
                       </button>
                     </div>
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.uid} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-150 group">
-                    <td className="py-4">
+                  <tr key={user.uid} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="transition-transform group-hover:scale-110 duration-200">
-                          {renderUserAvatar(user)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {renderUserAvatar(user)}
+                        <div className="truncate">
+                          <div className="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[180px]">
                             {user.name || user.displayName || 'Unnamed User'}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            ID: {user.uid.slice(0, 6)}...
-                          </div>
+                          {user.hasActiveBooking && (
+                            <Badge variant="light" color="success" size="sm">
+                              Active Booking
+                            </Badge>
+                          )}
                         </div>
-                        {user.hasActiveBooking && (
-                          <Badge variant="light" color="success" size="sm" className="ml-auto">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            Active
-                          </Badge>
-                        )}
                       </div>
                     </td>
-                    <td className="text-gray-600 dark:text-gray-300">
-                      <div className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      <div className="flex items-center gap-1.5 truncate max-w-[180px]">
+                        <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span className="group-hover:underline">{user.email}</span>
+                        <span className="truncate">{user.email}</span>
                       </div>
                     </td>
-                    <td>
+                    <td className="px-4 py-3">
                       <Badge
                         variant="light"
                         color={user.role === 'admin' ? 'primary' : user.role === 'merchant' ? 'info' : 'light'}
-                        className="w-fit"
+                        className="whitespace-nowrap"
                       >
-                        <div className="flex items-center gap-1.5">
-                          {user.role === 'admin' && (
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                          )}
-                          {user.role === 'merchant' && (
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                          )}
-                          {(!user.role || user.role === 'user') && (
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                          )}
-                          {user.role || 'user'}
-                        </div>
+                        {user.role === 'admin' && (
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                        )}
+                        {user.role || 'user'}
                       </Badge>
                     </td>
-                    <td>
+                    <td className="px-4 py-3">
                       <Badge
                         variant="light"
                         color={user.emailVerified ? 'success' : 'warning'}
-                        className="w-fit"
+                        className="whitespace-nowrap"
                       >
-                        <div className="flex items-center gap-1.5">
-                          {user.emailVerified ? (
-                            <>
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              Verified
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              Unverified
-                            </>
-                          )}
-                        </div>
+                        {user.emailVerified ? 'Verified' : 'Unverified'}
                       </Badge>
                     </td>
-                    <td className="text-gray-600 dark:text-gray-300">
+                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {user.createdAt && typeof user.createdAt.toDate === 'function' 
-                        ? (
-                          <div className="flex items-center gap-1.5">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            {new Date(user.createdAt.toDate()).toLocaleDateString()}
-                          </div>
-                        )
+                        ? new Date(user.createdAt.toDate()).toLocaleDateString()
                         : 'N/A'}
                     </td>
-                    <td>
-                      <div className="flex justify-center gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex justify-center gap-1">
                         <button
                           onClick={() => editUser(user)}
-                          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg dark:bg-blue-900/20 dark:hover:bg-blue-900/40 dark:text-blue-400 transition-colors duration-150 transform hover:scale-110"
+                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md dark:bg-blue-900/20 dark:hover:bg-blue-900/40 dark:text-blue-400"
                           title="Edit User"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </button>
                         <button
                           onClick={() => viewUserBookings(user)}
                           disabled={!user.hasActiveBooking}
-                          className={`p-2 rounded-lg transition-all duration-150 transform hover:scale-110 ${
+                          className={`p-1.5 rounded-md ${
                             user.hasActiveBooking 
                               ? 'bg-green-50 hover:bg-green-100 text-green-600 dark:bg-green-900/20 dark:hover:bg-green-900/40 dark:text-green-400 cursor-pointer' 
                               : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed opacity-70'
                           }`}
                           title={user.hasActiveBooking ? "View Bookings" : "No Active Bookings"}
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
                         </button>
@@ -635,14 +594,13 @@ export function UserTable() {
         </div>
       </div>
       
-      {/* BookingsModal - for viewing user bookings */}
+      {/* Modals - keeping existing code */}
       <BookingsModal 
         isOpen={isBookingsModalOpen}
         onClose={() => setIsBookingsModalOpen(false)}
         user={selectedUser}
       />
       
-      {/* EditUserModal - for editing user details */}
       <EditUserModal 
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

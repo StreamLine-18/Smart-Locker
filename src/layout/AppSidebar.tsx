@@ -13,6 +13,7 @@ import {
   PlugInIcon,
   UserCircleIcon,
   UserIcon,
+ 
 } from "../icons/index";
 
 type NavItem = {
@@ -52,18 +53,16 @@ const navItems: NavItem[] = [
     name: "Locker Management",
     path: "/lockers", // ⬅️ ubah dari subItems ke path langsung
   },
+  
 ];
 
-// const othersItems: NavItem[] = [
-//   {
-//     icon: <PlugInIcon />,
-//     name: "Authentication",
-//     subItems: [
-//       { name: "Sign In", path: "/signin", pro: false },
-//       { name: "Sign Up", path: "/signup", pro: false },
-//     ],
-//   },
-// ];
+const othersItems: NavItem[] = [
+  {
+    icon: <UserCircleIcon />,
+    name: "ADMIN PROFILE",
+    path: "/profile",
+  },
+];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -256,12 +255,12 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            {/* <div>
+            <div>
               <h2 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"}`}>
                 {isExpanded || isHovered || isMobileOpen ? "Others" : <HorizontaLDots />}
               </h2>
               {renderMenuItems(othersItems, "others")}
-            </div> */}
+            </div>
           </div>
         </nav>
       </div>

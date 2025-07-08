@@ -33,22 +33,30 @@ interface TableCellProps {
 
 // Table Component
 const Table: React.FC<TableProps> = ({ children, className }) => {
-  return <table className={`min-w-full  ${className}`}>{children}</table>;
+  return (
+    <table className={`min-w-full border-separate border-spacing-0 ${className}`}>
+      {children}
+    </table>
+  );
 };
 
 // TableHeader Component
 const TableHeader: React.FC<TableHeaderProps> = ({ children, className }) => {
-  return <thead className={className}>{children}</thead>;
+  return (
+    <thead className={`text-xs uppercase text-gray-700 dark:text-gray-300 ${className}`}>
+      {children}
+    </thead>
+  );
 };
 
 // TableBody Component
 const TableBody: React.FC<TableBodyProps> = ({ children, className }) => {
-  return <tbody className={className}>{children}</tbody>;
+  return <tbody className={`divide-y divide-gray-200 dark:divide-gray-700 ${className}`}>{children}</tbody>;
 };
 
 // TableRow Component
 const TableRow: React.FC<TableRowProps> = ({ children, className }) => {
-  return <tr className={className}>{children}</tr>;
+  return <tr className={`transition-colors ${className}`}>{children}</tr>;
 };
 
 // TableCell Component
@@ -58,7 +66,11 @@ const TableCell: React.FC<TableCellProps> = ({
   className,
 }) => {
   const CellTag = isHeader ? "th" : "td";
-  return <CellTag className={` ${className}`}>{children}</CellTag>;
+  const baseClasses = isHeader
+    ? "px-4 py-3 font-medium text-left"
+    : "px-4 py-3 text-sm";
+
+  return <CellTag className={`${baseClasses} ${className}`}>{children}</CellTag>;
 };
 
 export { Table, TableHeader, TableBody, TableRow, TableCell };

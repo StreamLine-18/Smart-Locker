@@ -197,14 +197,35 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { useAuth } from "@/context/AuthContext";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
   const { profile, user } = useAuth();
+  // Get selected user from session storage
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  
+  // Check if current user is admin
+  const isAdmin = profile?.role === 'admin';
+  
+  useEffect(() => {
+    // Load selected user from session storage
+    if (isAdmin) {
+      const storedUser = sessionStorage.getItem('selectedUser');
+      if (storedUser) {
+        setSelectedUser(JSON.parse(storedUser));
+      }
+    }
+  }, [isAdmin]);
+
+  // Use the selected user profile if available (and user is admin), otherwise use current user profile
+  const displayProfile = (isAdmin && selectedUser) ? selectedUser : profile;
+  
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
+    displayName: "",
     email: "",
+    role: "",
     phone: "",
     bio: "",
     facebook: "",
@@ -214,36 +235,54 @@ export default function UserInfoCard() {
   });
 
   useEffect(() => {
-    if (profile || user) {
+    if (displayProfile) {
       setForm({
-        firstName: profile?.firstName || "",
-        lastName: profile?.lastName || "",
-        email: profile?.email || user?.email || "",
-        phone: profile?.phone || "",
-        bio: profile?.bio || "",
-        facebook: profile?.facebook || "",
-        twitter: profile?.twitter || "",
-        linkedin: profile?.linkedin || "",
-        instagram: profile?.instagram || "",
+        displayName: displayProfile.displayName || "",
+        email: displayProfile.email || "",
+        role: displayProfile.role || "",
+        phone: displayProfile.phone || "",
+        bio: displayProfile.bio || "",
+        facebook: displayProfile.facebook || "",
+        twitter: displayProfile.twitter || "",
+        linkedin: displayProfile.linkedin || "",
+        instagram: displayProfile.instagram || "",
       });
     }
-  }, [profile, user]);
+  }, [displayProfile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    console.log("Saving changes...", form);
-    closeModal();
+  const handleSave = async () => {
+    if (!user) return;
+    
+    // Determine which user to update based on selection and admin status
+    const userIdToUpdate = (isAdmin && selectedUser) ? selectedUser.id : user.uid;
+    
+    try {
+      const userRef = doc(db, "users", userIdToUpdate);
+      await updateDoc(userRef, form);
+      console.log("Profile updated successfully");
+      closeModal();
+      
+      // If editing selected user, update the session storage
+      if (isAdmin && selectedUser) {
+        const updatedUser = { ...selectedUser, ...form };
+        sessionStorage.setItem('selectedUser', JSON.stringify(updatedUser));
+        setSelectedUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
   if (!user) {
     return (
       <div className="p-5 border border-red-400 text-red-700 bg-red-50 rounded-2xl dark:border-red-600 dark:bg-red-950">
         <p className="font-semibold">User not found.</p>
-        <p>Please log in as an admin to view or edit profile information.</p>
+        <p>Please log in to view or edit profile information.</p>
       </div>
     );
   }
@@ -259,19 +298,10 @@ export default function UserInfoCard() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                First Name
+                Display Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {form.firstName || "-"}
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Last Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {form.lastName || "-"}
+                {displayProfile?.displayName || "-"}
               </p>
             </div>
 
@@ -280,7 +310,16 @@ export default function UserInfoCard() {
                 Email address
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {form.email || "-"}
+                {displayProfile?.email || "-"}
+              </p>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                Role
+              </p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                {displayProfile?.role || "-"}
               </p>
             </div>
 
@@ -289,7 +328,7 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {form.phone || "-"}
+                {displayProfile?.phone || "-"}
               </p>
             </div>
 
@@ -298,10 +337,18 @@ export default function UserInfoCard() {
                 Bio
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {form.bio || "-"}
+                {displayProfile?.bio || "-"}
               </p>
             </div>
           </div>
+          
+          {isAdmin && selectedUser && selectedUser.id !== user.uid && (
+            <div className="mt-4">
+              <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                Viewing user: {selectedUser.displayName || selectedUser.email}
+              </span>
+            </div>
+          )}
         </div>
 
         <button
@@ -337,19 +384,19 @@ export default function UserInfoCard() {
                 Personal Information
               </h5>
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <div className="col-span-2 lg:col-span-1">
-                  <Label>First Name</Label>
-                  <Input name="firstName" value={form.firstName} onChange={handleChange} />
+                <div className="col-span-2">
+                  <Label>Display Name</Label>
+                  <Input name="displayName" value={form.displayName} onChange={handleChange} />
                 </div>
-                <div className="col-span-2 lg:col-span-1">
-                  <Label>Last Name</Label>
-                  <Input name="lastName" value={form.lastName} onChange={handleChange} />
-                </div>
-                <div className="col-span-2 lg:col-span-1">
+                <div>
                   <Label>Email Address</Label>
                   <Input name="email" value={form.email} onChange={handleChange} />
                 </div>
-                <div className="col-span-2 lg:col-span-1">
+                <div>
+                  <Label>Role</Label>
+                  <Input name="role" value={form.role} onChange={handleChange} />
+                </div>
+                <div>
                   <Label>Phone</Label>
                   <Input name="phone" value={form.phone} onChange={handleChange} />
                 </div>
