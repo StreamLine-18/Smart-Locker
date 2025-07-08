@@ -1,68 +1,87 @@
 import { NextResponse } from 'next/server';
 import midtransClient from 'midtrans-client';
-import { RateLimiterMemory } from 'rate-limiter-flexible';
-import { createLogger, format, transports } from 'winston';
-import validator from 'validator';
-
-// Inisialisasi Logger
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(format.timestamp(), format.json()),
-  transports: [
-    new transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new transports.File({ filename: 'logs/combined.log' })
-  ]
-});
-
-// Inisialisasi Rate Limiter
-const rateLimiter = new RateLimiterMemory({
-  points: 20,
-  duration: 60
-});
 
 export async function GET(request, { params }) {
   try {
-    // Rate Limiting
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    await rateLimiter.consume(ip);
-
-    // Await params untuk mendapatkan orderId
-    const { orderId } = await params;
+    console.log('Memproses permintaan GET ke /api/payment/status/[orderId]');
+    const startTime = Date.now();
+    const orderId = params.orderId;
     if (!orderId) {
-      return NextResponse.json({ error: 'Parameter orderId diperlukan' }, { status: 400 });
+      console.log('OrderId tidak disediakan');
+      return NextResponse.json(
+        { error: 'orderId diperlukan' },
+        {
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        }
+      );
     }
-    if (!validator.isLength(orderId, { min: 1, max: 50 })) {
-      return NextResponse.json({ error: 'orderId harus antara 1-50 karakter' }, { status: 400 });
+    console.log(`Mengambil status transaksi untuk orderId: ${orderId}`);
+    if (!process.env.MIDTRANS_SERVER_KEY || !process.env.MIDTRANS_CLIENT_KEY) {
+      console.error('Variabel lingkungan MIDTRANS_SERVER_KEY atau MIDTRANS_CLIENT_KEY tidak dikonfigurasi');
+      throw new Error('Konfigurasi Midtrans tidak lengkap');
     }
-
-    logger.info('Menerima permintaan status transaksi', { orderId });
-
-    // Inisialisasi Midtrans Core API
-    const core = new midtransClient.CoreApi({
-      isProduction: process.env.NODE_ENV === 'production',
+    const snap = new midtransClient.Snap({
+      isProduction: false,
       serverKey: process.env.MIDTRANS_SERVER_KEY,
-      clientKey: process.env.MIDTRANS_CLIENT_KEY
+      clientKey: process.env.MIDTRANS_CLIENT_KEY,
     });
 
-    const statusResponse = await core.transaction.status(orderId);
-
-    logger.info('Berhasil mendapatkan status transaksi', { orderId, status: statusResponse.transaction_status });
-
-    return NextResponse.json(statusResponse, { status: 200 });
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('Rate limit exceeded')) {
-      logger.warn('Rate limit terlampaui', { ip });
-      return NextResponse.json({ error: 'Terlalu banyak permintaan, coba lagi nanti' }, { status: 429 });
-    }
-
-    const status = error.response?.status || 500;
-    const errorMessage = error.response?.data?.error_messages?.join(', ') || error.message;
-    logger.error('Gagal mendapatkan status transaksi', {
+    const status = await snap.transaction.status(orderId);
+    const duration = Date.now() - startTime;
+    console.log(`Status transaksi untuk orderId ${orderId} diperoleh dalam ${duration}ms:`, JSON.stringify(status, null, 2));
+    return NextResponse.json(
       status,
-      message: errorMessage,
-      orderId: params.orderId || 'unknown'
-    });
-
-    return NextResponse.json({ error: errorMessage }, { status });
+      {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
+    );
+  } catch (error) {
+    console.error('Gagal mengambil status transaksi untuk orderId:', params.orderId, error);
+    if (error.httpStatusCode === '404' || error.message.includes('404')) {
+      console.log(`Transaksi untuk orderId ${params.orderId} tidak ditemukan di Midtrans`);
+      return NextResponse.json(
+        { error: 'Transaksi tidak ditemukan', status: 'not_found' },
+        {
+          status: 404,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Gagal mengambil status transaksi: ' + error.message },
+      {
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
+    );
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }
