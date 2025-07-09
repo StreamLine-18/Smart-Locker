@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/context/AuthContext';
 import { Outfit } from 'next/font/google';
 import './globals.css';
 
@@ -17,7 +18,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <SidebarProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

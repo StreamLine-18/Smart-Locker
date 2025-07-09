@@ -5,11 +5,146 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter, useSearchParams } from "next/navigation";
+import Alert from "@/components/ui/alert/Alert";
+import { doc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isAdminMode, setIsAdminMode] = useState(true); // Default to admin mode since this is admin sign in
+
+  const { signIn, signInAsAdmin, signInWithGoogle } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for successful registration query parameter
+  useEffect(() => {
+    const registered = searchParams.get("registered");
+    if (registered === "true") {
+      setSuccessMessage("Account created successfully! Please sign in.");
+    }
+  }, [searchParams]);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    try {
+      setError(null);
+      setSuccessMessage(null);
+      setLoading(true);
+
+      // Use the admin-specific sign in function for better error handling
+      if (isAdminMode) {
+        await signInAsAdmin(email, password);
+        // If successful, redirect to admin dashboard
+        router.push("/admin/dashboard");
+      } else {
+        // Regular sign in as fallback
+        await signIn(email, password);
+        
+        // Get user data from Firestore to check role
+        const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+
+        if (!userDoc.exists()) {
+          throw new Error("User account not found. Please contact support.");
+        }
+
+        const userData = userDoc.data();
+
+        // Check if the user has admin role
+        if (userData.role !== "admin") {
+          // Sign out immediately if not an admin
+          await auth.signOut();
+          throw new Error("Access denied. Administrator privileges required.");
+        }
+
+        // Redirect to admin dashboard
+        router.push("/admin/dashboard");
+      }
+    } catch (err: any) {
+      console.error("Sign in error:", err);
+      
+      // Handle Firebase initialization errors with a retry option
+      if (err.message?.includes("Authentication is not initialized")) {
+        if (retryCount < 3) {
+          setError("Authentication service is initializing. Retrying...");
+          setRetryCount(prev => prev + 1);
+          // Retry after a delay
+          setTimeout(() => {
+            handleSignIn(e);
+          }, 1500);
+          return;
+        } else {
+          setError("Authentication service could not be initialized. Please refresh the page and try again.");
+        }
+      } else if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+        setError("Invalid email or password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many failed login attempts. Please try again later or reset your password.");
+      } else {
+        setError(err.message || "Failed to sign in. Please check your credentials.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setError(null);
+      setSuccessMessage(null);
+      setLoading(true);
+
+      await signInWithGoogle();
+
+      // Similar role check for Google sign-in
+      const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+
+      if (!userDoc.exists()) {
+        // Sign out if user document doesn't exist
+        await auth.signOut();
+        throw new Error("User profile not found. Please contact support.");
+      }
+
+      const userData = userDoc.data();
+
+      // Check if the user has admin role
+      if (userData.role !== "admin") {
+        // Sign out if not an admin
+        await auth.signOut();
+        throw new Error("Access denied. Administrator privileges required.");
+      }
+
+      // Redirect to admin dashboard
+      router.push("/admin/dashboard");
+    } catch (err: any) {
+      console.error("Google sign in error:", err);
+
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Sign-in popup was closed. Please try again.");
+      } else {
+        setError(err.message || "Failed to sign in with Google. Admin access only.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -25,15 +160,32 @@ export default function SignInForm() {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign In
+              Admin Sign In
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign in!
+              Enter your credentials to access admin dashboard
             </p>
           </div>
+
+          {successMessage && (
+            <div className="mb-4">
+              <Alert variant="success" title="Success" message={successMessage} />
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-4">
+              <Alert variant="error" title="Error" message={error} />
+            </div>
+          )}
+
           <div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button
+                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
                 <svg
                   width="20"
                   height="20"
@@ -84,13 +236,19 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form onSubmit={handleSignIn}>
               <div className="space-y-6">
                 <div>
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="info@gmail.com" type="email" />
+                  <Input
+                    placeholder="info@gmail.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
                 <div>
                   <Label>
@@ -100,6 +258,9 @@ export default function SignInForm() {
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -115,10 +276,17 @@ export default function SignInForm() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
-                    <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Keep me logged in
-                    </span>
+                    <Checkbox
+                      checked={isAdminMode}
+                      onChange={setIsAdminMode}
+                      id="admin-mode"
+                    />
+                    <label
+                      htmlFor="admin-mode"
+                      className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400 cursor-pointer"
+                    >
+                      Admin access mode
+                    </label>
                   </div>
                   <Link
                     href="/reset-password"
@@ -128,8 +296,20 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        {retryCount > 0 ? `Retrying (${retryCount})...` : "Signing in..."}
+                      </div>
+                    ) : (
+                      "Sign in"
+                    )}
                   </Button>
                 </div>
               </div>
@@ -152,3 +332,14 @@ export default function SignInForm() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+

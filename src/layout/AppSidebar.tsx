@@ -13,6 +13,7 @@ import {
   PlugInIcon,
   UserCircleIcon,
   UserIcon,
+  
  
 } from "../icons/index";
 
@@ -51,7 +52,10 @@ const navItems: NavItem[] = [
   {
     icon: <LockIcon />,
     name: "Locker Management",
-    path: "/lockers", // ⬅️ ubah dari subItems ke path langsung
+     subItems: [
+      { name: "All locker",  path: "/lockers"},
+      { name: "locker logs", path: "/locker-logs" },
+    ], // ⬅️ ubah dari subItems ke path langsung
   },
   
 ];
@@ -62,6 +66,24 @@ const othersItems: NavItem[] = [
     name: "ADMIN PROFILE",
     path: "/profile",
   },
+  
+  {
+      icon: <CalenderIcon />,
+      name: "Pendapatan",
+      path: "/line-chart",
+    },
+
+  {
+    icon: <PlugInIcon />,
+    name: "Authentication",
+    subItems: [
+      { name: "Sign In", path: "/signin" },
+      { name: "Sign Up", path: "/signup" },
+    ],   
+  },
+
+
+  
 ];
 
 const AppSidebar: React.FC = () => {

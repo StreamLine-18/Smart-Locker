@@ -7,13 +7,15 @@ import { useAuth } from '@/context/AuthContext';
 interface AuthGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean;
+  requireAdmin?: boolean; // New prop for admin-only routes
   requireCompleteProfile?: boolean;
   redirectTo?: string;
 }
 
 export default function AuthGuard({ 
   children, 
-  requireAuth = true, 
+  requireAuth = true,
+  requireAdmin = false,
   requireCompleteProfile = false,
   redirectTo
 }: AuthGuardProps) {
@@ -21,38 +23,54 @@ export default function AuthGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  // List rute publik (tanpa auth)
+  // List of public routes (no auth required)
   const publicRoutes = ['/', '/signin', '/signup', '/forgot-password'];
 
-  // Cek rute publik, pastikan pathname tidak undefined
+  // Check if current path is a public route
   const isPublicRoute = pathname ? publicRoutes.includes(pathname) : false;
 
+  // Check if user is an admin
+  const isAdmin = profile?.role === 'admin';
+
   useEffect(() => {
-    // Jangan lanjut kalau auth belum siap atau pathname belum ada
+    // Don't proceed if auth is still loading or pathname is undefined
     if (isLoading || !pathname) return;
 
     const currentPath = pathname;
 
-    // Simpan tujuan yang diminta user sebelum login
+    // Save requested destination before login
     if (requireAuth && !isAuthenticated && !isPublicRoute) {
       sessionStorage.setItem('redirectPath', currentPath);
     }
 
-    // Redirect ke halaman login kalau belum login
+    // Redirect to login if authentication is required but user is not logged in
     if (requireAuth && !isAuthenticated) {
       router.push(redirectTo || '/signin');
       return;
     }
 
-    // Kalau sudah login tapi masih di halaman login/signup, arahkan ke dashboard
+    // Redirect to dashboard if user is already logged in but trying to access login/signup pages
     if (isAuthenticated && (currentPath === '/signin' || currentPath === '/signup')) {
       const redirectPath = sessionStorage.getItem('redirectPath');
       sessionStorage.removeItem('redirectPath');
-      router.push(redirectPath || '/dashboard');
+      
+      // Redirect admins to admin dashboard, regular users to user dashboard
+      if (isAdmin) {
+        router.push(redirectPath || '/');
+      } else {
+        router.push(redirectPath || '/');
+      }
       return;
     }
 
-    // Cek kelengkapan profil kalau diminta
+    // Check if user has admin privileges when accessing admin-only routes
+    if (requireAdmin && isAuthenticated && !isAdmin) {
+      // User is logged in but not an admin, redirect to unauthorized page or dashboard
+      router.push('/unauthorized');
+      return;
+    }
+
+    // Check if profile is complete when required
     if (isAuthenticated && requireCompleteProfile && profile && !profile.isProfileComplete) {
       if (currentPath !== '/profile/setup') {
         router.push('/profile/setup');
@@ -60,17 +78,22 @@ export default function AuthGuard({
       }
     }
 
-    // Setelah profil lengkap, arahkan ke tujuan sebelumnya
+    // After profile setup is complete, redirect to saved destination or appropriate dashboard
     if (isAuthenticated && profile?.isProfileComplete && currentPath === '/profile/setup') {
       const redirectPath = sessionStorage.getItem('redirectPath');
       sessionStorage.removeItem('redirectPath');
-      router.push(redirectPath || '/dashboard');
+      
+      if (isAdmin) {
+        router.push(redirectPath || '/');
+      } else {
+        router.push(redirectPath || '/');
+      }
       return;
     }
 
-  }, [isAuthenticated, profile, isLoading, pathname, router, requireAuth, requireCompleteProfile, redirectTo]);
+  }, [isAuthenticated, profile, isAdmin, isLoading, pathname, router, requireAuth, requireAdmin, requireCompleteProfile, redirectTo]);
 
-  // Tampilkan spinner saat auth masih loading
+  // Show loading spinner while auth is in progress
   if (isLoading || !pathname) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,13 +102,15 @@ export default function AuthGuard({
     );
   }
 
-  // Tampilkan konten kalau semua kondisi terpenuhi
-  if (!requireAuth || isAuthenticated) {
-    if (!requireCompleteProfile || (profile && profile.isProfileComplete)) {
-      return <>{children}</>;
-    }
+  // Show content if all conditions are met
+  if (
+    (!requireAuth || isAuthenticated) && 
+    (!requireAdmin || isAdmin) && 
+    (!requireCompleteProfile || (profile && profile.isProfileComplete))
+  ) {
+    return <>{children}</>;
   }
 
-  // Kalau tidak memenuhi syarat, tampilkan null saat redirect
+  // Return null while redirecting
   return null;
 }

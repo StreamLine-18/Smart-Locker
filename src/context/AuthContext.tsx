@@ -9,7 +9,8 @@ import {
   signInWithPopup,
   signOut,
   sendEmailVerification,
-  updateProfile as updateFirebaseProfile
+  updateProfile as updateFirebaseProfile,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '@/lib/firebase';
@@ -17,11 +18,12 @@ import { AuthState, AuthUser, UserProfile, ProfileSetupData } from '@/types/user
 
 interface AuthContextType extends AuthState {
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName: string) => Promise<User>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: ProfileSetupData) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +31,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error(
+      'useAuth must be used within an AuthProvider. ' +
+      'Make sure to wrap your components with <AuthProvider> in your root layout.'
+    );
   }
   return context;
 };
@@ -166,22 +171,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  // Sign up function that returns the created user
+  const signUp = async (email: string, password: string, displayName: string): Promise<User> => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      await signInWithEmailAndPassword(auth!, email, password);
+      
+      // Ensure auth is initialized
+      if (!auth) {
+        throw new Error("Authentication is not initialized. Please refresh the page and try again.");
+      }
+      
+      // Create user account
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update user profile with display name
+      if (user) {
+        await updateFirebaseProfile(user, { displayName });
+        await sendEmailVerification(user);
+        
+        // Create the initial user profile in Firestore
+        await createUserProfile(user, { displayName, provider: 'email' });
+        
+        // Return the user
+        return user;
+      }
+      
+      throw new Error("User creation failed");
     } catch (error: any) {
+      console.error("Sign up error in AuthContext:", error);
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
     }
   };
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      const { user } = await createUserWithEmailAndPassword(auth!, email, password);
-      await updateFirebaseProfile(user, { displayName });
-      await sendEmailVerification(user);
+      
+      // Ensure auth is initialized
+      if (!auth) {
+        throw new Error("Authentication is not initialized. Please refresh the page and try again.");
+      }
+      
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
@@ -191,7 +223,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      await signInWithPopup(auth!, googleProvider);
+      
+      // Ensure auth is initialized
+      if (!auth) {
+        throw new Error("Authentication is not initialized. Please refresh the page and try again.");
+      }
+      
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
@@ -200,9 +238,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await signOut(auth!);
+      setState(prev => ({ ...prev, isLoading: true }));
+      
+      if (!auth) {
+        throw new Error("Authentication is not initialized");
+      }
+      
+      await signOut(auth);
+      
+      setState({
+        user: null,
+        profile: null,
+        isLoading: false,
+        isAuthenticated: false,
+        error: null,
+      });
     } catch (error: any) {
-      setState(prev => ({ ...prev, error: error.message }));
+      setState(prev => ({ ...prev, isLoading: false, error: error.message }));
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      
+      if (!auth) {
+        throw new Error("Authentication is not initialized");
+      }
+      
+      await sendPasswordResetEmail(auth, email);
+      setState(prev => ({ ...prev, isLoading: false }));
+    } catch (error: any) {
+      setState(prev => ({ ...prev, isLoading: false, error: error.message }));
       throw error;
     }
   };
@@ -235,6 +303,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!state.user) return;
 
     try {
+      setState(prev => ({ ...prev, isLoading: true }));
       const profile = await fetchUserProfile(state.user.uid);
       setState(prev => ({ ...prev, profile, isLoading: false }));
     } catch (error: any) {
@@ -250,6 +319,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateProfile,
     refreshProfile,
+    resetPassword,
   };
 
   return (

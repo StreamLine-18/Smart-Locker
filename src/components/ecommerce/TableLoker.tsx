@@ -95,7 +95,9 @@ export default function TableLoker() {
         const newLocker = await res.json();
         setLockers((prev: any[]) => [...prev, newLocker]);
         setShowAddModal(false);
+        return newLocker; // Return the new locker data
       }
+      throw new Error("Failed to add locker via API");
     } catch (error) {
       console.error("Error adding locker:", error);
       throw error;

@@ -19,6 +19,7 @@ export function useAdminUsers() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
   
   const isAdmin = profile?.role === 'admin';
 
@@ -32,6 +33,17 @@ export function useAdminUsers() {
 
       try {
         setLoading(true);
+        
+        // Check if Firestore is initialized
+        if (!db) {
+          console.log("Firestore not initialized, waiting...");
+          // Wait for 1 second and check again
+          setTimeout(fetchUsers, 1000);
+          return;
+        }
+        
+        setInitialized(true);
+        
         const usersRef = collection(db, "users");
         const q = query(usersRef);
         const querySnapshot = await getDocs(q);
@@ -53,6 +65,6 @@ export function useAdminUsers() {
     fetchUsers();
   }, [user, isAdmin]);
 
-  return { users, loading, error, isAdmin };
+  return { users, loading, error, isAdmin, initialized };
 }
 export default useAdminUsers;

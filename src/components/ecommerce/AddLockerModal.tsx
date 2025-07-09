@@ -5,6 +5,7 @@ import Alert from '../ui/alert/Alert';
 import { collection, getDocs, query, getFirestore } from 'firebase/firestore';
 import { db as importedDb } from '@/lib/firebase';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import { addLockerToRealtimeDb } from '@/lib/syncLockerData';
 
 // Ensure Firebase is initialized
 const firebaseConfig = {
@@ -13,7 +14,8 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL, // Make sure this is set in your .env
 };
 
 // Initialize Firebase if it hasn't been initialized yet
@@ -107,7 +109,13 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
     setError(null);
     
     try {
+      // First save to the API endpoint (Firestore via API route)
       await onSubmit(form);
+      
+      // Then save to Realtime Database using our utility function
+      await addLockerToRealtimeDb(form);
+      
+      // Show success message and close modal
       setSuccess(true);
       setTimeout(() => {
         resetForm();
@@ -115,6 +123,7 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
         setSuccess(false);
       }, 1500);
     } catch (err: any) {
+      console.error("Error adding locker:", err);
       setError(err.message || "Failed to add locker. Please try again.");
     } finally {
       setIsAdding(false);
@@ -537,3 +546,4 @@ export default function AddLockerModal({ isOpen, onClose, onSubmit }: AddLockerM
     </div>
   );
 }
+

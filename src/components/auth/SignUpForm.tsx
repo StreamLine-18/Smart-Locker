@@ -2,13 +2,104 @@
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Alert from "@/components/ui/alert/Alert";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+
+  // Form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // UI state
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const { signUp, signInWithGoogle } = useAuth();
+  const router = useRouter();
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!firstName || !lastName || !email || !password) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    if (!isChecked) {
+      setError("You must agree to the Terms and Conditions");
+      return;
+    }
+
+    try {
+      setError(null);
+      setLoading(true);
+
+      // Create display name from first and last name
+      const displayName = `${firstName} ${lastName}`;
+
+      // Create user account - using the updated signUp function that returns the user
+      const user = await signUp(email, password, displayName);
+
+      // Update the user profile with additional information
+      await updateDoc(doc(db, "users", user.uid), {
+        firstName,
+        lastName,
+        displayName,
+        isProfileComplete: true,
+        role: "admin", // Default role for new users
+      });
+
+      // Redirect to login page after successful signup
+      router.push("/signin?registered=true");
+    } catch (err: any) {
+      console.error("Sign up error:", err);
+
+      // Handle specific Firebase errors with more user-friendly messages
+      if (err.code === "auth/email-already-in-use") {
+        setError(
+          "This email is already registered. Please use a different email or try logging in."
+        );
+      } else if (err.code === "auth/weak-password") {
+        setError("Password is too weak. Please use a stronger password.");
+      } else {
+        setError(err.message || "Failed to create account. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      // Use Google sign-in from our updated context
+      await signInWithGoogle();
+
+      // The user profile will be automatically created by the AuthProvider
+      // Redirect to dashboard or onboarding page
+      router.push("/");
+    } catch (err: any) {
+      console.error("Google sign up error:", err);
+      setError(err.message || "Failed to sign up with Google.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
@@ -30,9 +121,20 @@ export default function SignUpForm() {
               Enter your email and password to sign up!
             </p>
           </div>
+
+          {error && (
+            <div className="mb-4">
+              <Alert variant="error" title="Error" message={error} />
+            </div>
+          )}
+
           <div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-              <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button
+                className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+                onClick={handleGoogleSignUp}
+                disabled={loading}
+              >
                 <svg
                   width="20"
                   height="20"
@@ -59,6 +161,7 @@ export default function SignUpForm() {
                 </svg>
                 Sign up with Google
               </button>
+              {/* Twitter/X button - kept as is */}
               <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                 <svg
                   width="21"
@@ -83,10 +186,10 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form onSubmit={handleSignUp}>
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* <!-- First Name --> */}
+                  {/* First Name */}
                   <div className="sm:col-span-1">
                     <Label>
                       First Name<span className="text-error-500">*</span>
@@ -96,9 +199,12 @@ export default function SignUpForm() {
                       id="fname"
                       name="fname"
                       placeholder="Enter your first name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
                     />
                   </div>
-                  {/* <!-- Last Name --> */}
+                  {/* Last Name */}
                   <div className="sm:col-span-1">
                     <Label>
                       Last Name<span className="text-error-500">*</span>
@@ -108,10 +214,13 @@ export default function SignUpForm() {
                       id="lname"
                       name="lname"
                       placeholder="Enter your last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
                     />
                   </div>
                 </div>
-                {/* <!-- Email --> */}
+                {/* Email */}
                 <div>
                   <Label>
                     Email<span className="text-error-500">*</span>
@@ -121,9 +230,12 @@ export default function SignUpForm() {
                     id="email"
                     name="email"
                     placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
-                {/* <!-- Password --> */}
+                {/* Password */}
                 <div>
                   <Label>
                     Password<span className="text-error-500">*</span>
@@ -132,6 +244,10 @@ export default function SignUpForm() {
                     <Input
                       placeholder="Enter your password"
                       type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -144,8 +260,11 @@ export default function SignUpForm() {
                       )}
                     </span>
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Password must be at least 6 characters
+                  </p>
                 </div>
-                {/* <!-- Checkbox --> */}
+                {/* Checkbox */}
                 <div className="flex items-center gap-3">
                   <Checkbox
                     className="w-5 h-5"
@@ -163,18 +282,33 @@ export default function SignUpForm() {
                     </span>
                   </p>
                 </div>
-                {/* <!-- Button --> */}
+                {/* Button - updated to use the Button component for consistency */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                    Sign Up
-                  </button>
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    onClick={loading ? undefined : () => {
+                      const form = document.querySelector('form');
+                      if (form) form.requestSubmit();
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Creating Account...
+                      </div>
+                    ) : (
+                      "Sign Up"
+                    )}
+                  </Button>
                 </div>
               </div>
             </form>
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account?
+                Already have an account?{" "}
                 <Link
                   href="/signin"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
@@ -189,3 +323,4 @@ export default function SignUpForm() {
     </div>
   );
 }
+

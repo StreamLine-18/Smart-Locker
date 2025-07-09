@@ -3,12 +3,16 @@
 import { useEffect, useState } from 'react';
 import { Table } from '../ui/table';
 import Badge from '../ui/badge/Badge';
-import { collection, getDocs, getFirestore, query, where } from 'firebase/firestore';
+import { collection, getDocs, getFirestore, query, where, doc, deleteDoc } from 'firebase/firestore';
 import { db as importedDb } from '@/lib/firebase';
 import Avatar from '@/components/ui/avatar/Avatar';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import BookingsModal from './BookingsModal';
 import EditUserModal from './EditUserModal';
+import Button from '@/components/ui/button/Button';
+import { Modal } from '@/components/ui/modal';
+// Add imports for Realtime Database
+import { getDatabase, ref, onValue, off } from 'firebase/database';
 
 // Ensure Firebase is initialized properly
 const firebaseConfig = {
@@ -17,13 +21,16 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL, // Make sure this is set
 };
 
 // Initialize Firebase if it hasn't been initialized yet
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 // Use the imported db or create a new instance if it's undefined
 const db = importedDb || getFirestore(app);
+// Initialize Realtime Database
+const realtimeDb = typeof window !== 'undefined' ? getDatabase(app) : null;
 
 interface Order {
   uid: string;
@@ -36,6 +43,19 @@ interface Order {
   updatedAt: any;
   lockerNumber?: string;
   locationName?: string;
+  duration?: number;
+  startTime?: any;
+  endTime?: any;
+}
+
+interface ActiveLocker {
+  lockerId: string;
+  lockerNumber: string;
+  locationId: string;
+  bookingStatus: string;
+  userId: string;
+  startTime: number;
+  endTime: number;
 }
 
 interface User {
@@ -49,13 +69,17 @@ interface User {
   createdAt?: any;
   bookings?: Order[];
   hasActiveBooking?: boolean;
+  activeLockers?: ActiveLocker[]; // New field to track current active lockers
+  lastActivity?: number; // Timestamp of last activity
 }
 
 export function UserTable() {
   // Data states
   const [users, setUsers] = useState<User[]>([]);
+  const [activeLockers, setActiveLockers] = useState<{[key: string]: ActiveLocker}>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [realtimeActive, setRealtimeActive] = useState(false);
   
   // UI states
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +92,84 @@ export function UserTable() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isBookingsModalOpen, setIsBookingsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // New state for delete confirmation modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Subscribe to realtime locker data
+  useEffect(() => {
+    if (!realtimeDb) return;
+
+    const lockersRef = ref(realtimeDb, 'lockers');
+    
+    // Set up the listener for active lockers
+    onValue(lockersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const currentActiveLockers: {[key: string]: ActiveLocker} = {};
+
+        // Process each locker
+        Object.entries(data).forEach(([lockerId, lockerData]: [string, any]) => {
+          // Check if the locker is currently booked
+          if (lockerData.bookingStatus === 'occupied' || 
+              lockerData.bookingStatus === 'booked' || 
+              lockerData.status?.booking === 'occupied' || 
+              lockerData.status?.booking === 'booked') {
+            
+            const userId = lockerData.currentUserId || lockerData.lastUser;
+            
+            if (userId) {
+              currentActiveLockers[lockerId] = {
+                lockerId,
+                lockerNumber: lockerData.lockerNumber || 'Unknown',
+                locationId: lockerData.locationId || 'Unknown location',
+                bookingStatus: lockerData.bookingStatus || lockerData.status?.booking || 'occupied',
+                userId,
+                startTime: lockerData.startTime || Date.now(),
+                endTime: lockerData.endTime || (Date.now() + 3600000), // Default 1 hour if not specified
+              };
+            }
+          }
+        });
+
+        setActiveLockers(currentActiveLockers);
+        setRealtimeActive(true);
+        
+        // Update user data with active locker information
+        updateUsersWithLockerData(currentActiveLockers);
+      }
+    }, (error) => {
+      console.error("Error getting realtime locker data:", error);
+    });
+
+    // Clean up the listener when component unmounts
+    return () => {
+      off(lockersRef);
+    };
+  }, [realtimeDb]);
+
+  // Update users with active locker data
+  const updateUsersWithLockerData = (lockers: {[key: string]: ActiveLocker}) => {
+    setUsers(prevUsers => {
+      return prevUsers.map(user => {
+        // Find all lockers for this user
+        const userLockers = Object.values(lockers).filter(locker => 
+          locker.userId === user.uid
+        );
+        
+        // Update user with locker information
+        return {
+          ...user,
+          activeLockers: userLockers,
+          hasActiveBooking: userLockers.length > 0,
+          lastActivity: userLockers.length > 0 ? 
+            Math.max(...userLockers.map(l => l.startTime)) : 
+            user.lastActivity
+        };
+      });
+    });
+  };
 
   // Fetch users and their bookings
   useEffect(() => {
@@ -91,7 +193,8 @@ export function UserTable() {
             emailVerified: data.emailVerified ?? false,
             ...data,
             hasActiveBooking: false,
-            bookings: []
+            bookings: [],
+            activeLockers: []
           };
         }) as User[];
         
@@ -126,6 +229,11 @@ export function UserTable() {
         });
         
         setUsers(usersWithBookings);
+        
+        // If we already have realtime locker data, update users with it
+        if (Object.keys(activeLockers).length > 0) {
+          updateUsersWithLockerData(activeLockers);
+        }
       } catch (err: any) {
         console.error('Error fetching users:', err);
         setError(err.message || 'Failed to load users');
@@ -164,6 +272,18 @@ export function UserTable() {
         </div>
       );
     }
+  };
+  
+  // Format time remaining in booking
+  const formatTimeRemaining = (startTime: number, endTime: number) => {
+    const now = Date.now();
+    if (now > endTime) return 'Expired';
+    
+    const diffMs = endTime - now;
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${diffHrs}h ${diffMins}m`;
   };
   
   // Filter and sort users
@@ -226,6 +346,37 @@ export function UserTable() {
     setIsEditModalOpen(true);
   };
 
+  // Handle user deletion
+  const deleteUser = async (userId: string) => {
+    if (!db) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      // Delete the user from Firestore
+      await deleteDoc(doc(db, "users", userId));
+      
+      // Update the UI by removing the deleted user
+      setUsers(prevUsers => prevUsers.filter(user => user.uid !== userId));
+      
+      // Close the modal
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
+      
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      // You could add error state handling here
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Open delete confirmation modal
+  const confirmDeleteUser = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="p-8 text-center bg-white dark:bg-gray-800 rounded-xl shadow-md">
@@ -266,6 +417,15 @@ export function UserTable() {
             </svg>
             Users Management
           </h3>
+          
+          {/* Real-time status indicator */}
+          <div className="flex items-center gap-2 mr-4">
+            <span className={`w-2 h-2 rounded-full ${realtimeActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">
+              {realtimeActive ? 'Real-time monitoring active' : 'Loading real-time data...'}
+            </span>
+          </div>
+          
           <div className="w-full sm:w-auto">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -405,13 +565,13 @@ export function UserTable() {
         </div>
       </div>
       
-      {/* User Table - optimized layout */}
+      {/* User Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
         <div className="overflow-x-auto">
           <Table className="w-full">
             <thead>
               <tr className="text-xs bg-gray-50 dark:bg-gray-750">
-                <th className="w-[25%] px-4 py-3">
+                <th className="w-[20%] px-4 py-3">
                   <button 
                     className="flex items-center font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
                     onClick={() => toggleSort('name')}
@@ -432,7 +592,7 @@ export function UserTable() {
                     )}
                   </button>
                 </th>
-                <th className="w-[25%] px-4 py-3">
+                <th className="w-[20%] px-4 py-3">
                   <button 
                     className="flex items-center font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
                     onClick={() => toggleSort('email')}
@@ -453,11 +613,13 @@ export function UserTable() {
                     )}
                   </button>
                 </th>
-                <th className="py-5 px-5 flex items-center font-medium">Role</th>
-                <th className="w-[15%] px-4 py-5 font-medium">
-                  <div className=' px-2.5 flex items-center'>Status</div>
-                </th>
-                <th className="w-[10%] px-4 py-5">
+                <th className="py-3 px-4 font-medium">Role</th>
+                <th className="w-[15%] px-4 py-3 font-medium">Status</th>
+                
+                {/* New column for active lockers */}
+                <th className="w-[20%] px-4 py-3 font-medium">Active Lockers</th>
+                
+                <th className="w-[10%] px-4 py-3">
                   <button 
                     className="flex items-center font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
                     onClick={() => toggleSort('created')}
@@ -484,7 +646,7 @@ export function UserTable() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8">
+                  <td colSpan={7} className="text-center py-8">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                         <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,7 +688,7 @@ export function UserTable() {
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                       <div className="flex items-center gap-1.5 truncate max-w-[180px]">
                         <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 012 2z" />
                         </svg>
                         <span className="truncate">{user.email}</span>
                       </div>
@@ -554,6 +716,33 @@ export function UserTable() {
                         {user.emailVerified ? 'Verified' : 'Unverified'}
                       </Badge>
                     </td>
+                    
+                    {/* New cell for active lockers */}
+                    <td className="px-4 py-3">
+                      {user.activeLockers && user.activeLockers.length > 0 ? (
+                        <div className="space-y-1.5">
+                          {user.activeLockers.map((locker, index) => (
+                            <div key={locker.lockerId} className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+                                <span className="text-xs font-medium">
+                                  {locker.lockerNumber} 
+                                  <span className="text-gray-500 ml-1">({locker.locationId})</span>
+                                </span>
+                              </div>
+                              <div className="ml-2">
+                                <Badge variant="light" color="info" size="sm">
+                                  {formatTimeRemaining(locker.startTime, locker.endTime)}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">No active lockers</span>
+                      )}
+                    </td>
+                    
                     <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {user.createdAt && typeof user.createdAt.toDate === 'function' 
                         ? new Date(user.createdAt.toDate()).toLocaleDateString()
@@ -584,6 +773,17 @@ export function UserTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
                         </button>
+                        {/* Delete button */}
+                        <button
+                          onClick={() => confirmDeleteUser(user)}
+                          className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-md dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400"
+                          title="Delete User"
+                          disabled={user.role === 'admin'} // Optional: prevent deleting admin users
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -592,6 +792,30 @@ export function UserTable() {
             </tbody>
           </Table>
         </div>
+      </div>
+      
+      {/* Real-time status bar */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${realtimeActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {realtimeActive ? 'Real-time monitoring active' : 'Connecting to real-time data...'}
+          </span>
+        </div>
+        
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          Total active lockers: <span className="font-medium">{Object.keys(activeLockers).length}</span>
+        </div>
+        
+        <button 
+          onClick={() => window.location.reload()}
+          className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 flex items-center"
+        >
+          <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh Data
+        </button>
       </div>
       
       {/* Modals - keeping existing code */}
@@ -607,6 +831,73 @@ export function UserTable() {
         user={selectedUser}
         onUserUpdated={handleUserUpdated}
       />
+      
+      {/* Delete User Confirmation Modal */}
+      <Modal 
+        isOpen={isDeleteModalOpen} 
+        onClose={() => setIsDeleteModalOpen(false)}
+        className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 p-0 shadow-2xl"
+      >
+        <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Konfirmasi Hapus User</h3>
+        </div>
+        <div className="p-5">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-12 w-12 flex items-center justify-center bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 dark:text-red-400">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-base font-medium text-gray-800 dark:text-white">
+                Hapus User: {userToDelete?.name || userToDelete?.displayName || userToDelete?.email}?
+              </h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Tindakan ini tidak dapat dibatalkan. Semua data terkait user ini akan dihapus secara permanen dari sistem.
+              </p>
+            </div>
+          </div>
+          
+          {userToDelete?.hasActiveBooking && (
+            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-lg">
+              <div className="flex items-center text-amber-600 dark:text-amber-400">
+                <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span className="text-sm font-medium">Peringatan: User memiliki booking aktif</span>
+              </div>
+              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                User ini masih memiliki booking aktif. Menghapus user akan mempengaruhi data booking.
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-end gap-3 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-b-2xl">
+          <Button
+            variant="outline"
+            onClick={() => setIsDeleteModalOpen(false)}
+            disabled={isDeleting}
+            className="px-4 py-2 text-sm"
+          >
+            Batal
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => userToDelete && deleteUser(userToDelete.uid)}
+            disabled={isDeleting}
+            className="px-4 py-2 text-sm bg-red-500 hover:bg-red-600"
+          >
+            {isDeleting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                Menghapus...
+              </>
+            ) : (
+              'Hapus User'
+            )}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
