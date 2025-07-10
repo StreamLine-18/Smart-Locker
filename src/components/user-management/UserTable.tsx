@@ -96,6 +96,18 @@ export function UserTable() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  // New state for booking details
+  const [bookingDetails, setBookingDetails] = useState<{
+    count: number;
+    hasActive: boolean;
+    hasCompleted: boolean;
+    hasPending: boolean;
+  }>({
+    count: 0,
+    hasActive: false,
+    hasCompleted: false,
+    hasPending: false
+  });
 
   // Subscribe to realtime locker data
   useEffect(() => {
@@ -338,6 +350,18 @@ export function UserTable() {
   const viewUserBookings = (user: User) => {
     setSelectedUser(user);
     setIsBookingsModalOpen(true);
+    
+    // Calculate booking statistics
+    const activeCount = user.activeLockers?.length || 0;
+    const completedCount = user.bookings?.filter(b => b.orderStatus === 'completed').length || 0;
+    const pendingCount = user.bookings?.filter(b => ['pending', 'processing'].includes(b.orderStatus)).length || 0;
+    
+    setBookingDetails({
+      count: activeCount + completedCount + pendingCount,
+      hasActive: activeCount > 0,
+      hasCompleted: completedCount > 0,
+      hasPending: pendingCount > 0
+    });
   };
   
   // Open edit user modal
@@ -721,7 +745,7 @@ export function UserTable() {
                     <td className="px-4 py-3">
                       {user.activeLockers && user.activeLockers.length > 0 ? (
                         <div className="space-y-1.5">
-                          {user.activeLockers.map((locker, index) => (
+                          {user.activeLockers.slice(0, 2).map((locker, index) => (
                             <div key={locker.lockerId} className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
@@ -737,9 +761,44 @@ export function UserTable() {
                               </div>
                             </div>
                           ))}
+                          
+                          {user.activeLockers.length > 2 && (
+                            <button 
+                              onClick={() => viewUserBookings(user)}
+                              className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-1"
+                            >
+                              +{user.activeLockers.length - 2} more lockers...
+                            </button>
+                          )}
+                          
+                          <button 
+                            onClick={() => viewUserBookings(user)}
+                            className="flex items-center text-xs text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 mt-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full"
+                          >
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View Details
+                          </button>
                         </div>
                       ) : (
-                        <span className="text-gray-400 text-xs">No active lockers</span>
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-gray-400 text-xs">No active lockers</span>
+                          
+                          {/* Show button to view history if user has any completed bookings */}
+                          {(user.bookings && user.bookings.length > 0) && (
+                            <button 
+                              onClick={() => viewUserBookings(user)}
+                              className="flex items-center text-xs text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400 mt-1"
+                            >
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              View booking history
+                            </button>
+                          )}
+                        </div>
                       )}
                     </td>
                     
@@ -759,20 +818,22 @@ export function UserTable() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </button>
+                        
+                        {/* Enhanced Booking Details Button */}
                         <button
                           onClick={() => viewUserBookings(user)}
-                          disabled={!user.hasActiveBooking}
                           className={`p-1.5 rounded-md ${
-                            user.hasActiveBooking 
+                            user.hasActiveBooking || user.bookings?.length 
                               ? 'bg-green-50 hover:bg-green-100 text-green-600 dark:bg-green-900/20 dark:hover:bg-green-900/40 dark:text-green-400 cursor-pointer' 
-                              : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed opacity-70'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-400 cursor-pointer'
                           }`}
-                          title={user.hasActiveBooking ? "View Bookings" : "No Active Bookings"}
+                          title="View All Bookings"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                           </svg>
                         </button>
+                        
                         {/* Delete button */}
                         <button
                           onClick={() => confirmDeleteUser(user)}
